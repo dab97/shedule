@@ -40,7 +40,7 @@ export default function RootLayout({
         className={`${evolventaSans.variable} ${geistMono.variable} antialiased`}
       >       
         {children}
-        <Analytics/>
+        <Analytics />
       </body>
     </html>
   );
