@@ -9,7 +9,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { format } from "date-fns";
+import { format, startOfWeek, addDays } from "date-fns";
 import { ru } from "date-fns/locale";
 import {
   CalendarIcon,
@@ -70,6 +70,23 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
   const [selectedLesson, setSelectedLesson] = useState<ScheduleItem | null>(
     null
   );
+
+    // Начало недели
+    const startDate = useMemo(() => {
+      const currentDate = date || new Date();
+      return startOfWeek(currentDate, { weekStartsOn: 1 });
+    }, [date]);
+  
+    // Генерация дней недели с датами
+    const daysWithDates = useMemo(() => {
+      return daysOfWeek.map((day, index) => {
+        const currentDay = addDays(startDate, index);
+        return {
+          ...day,
+          date: format(currentDay, "dd.MM"), // Форматируем дату
+        };
+      });
+    }, [startDate]);
 
   const handleLessonClick = (lesson: ScheduleItem) => {
     setSelectedLesson(lesson); // Устанавливаем выбранное занятие
@@ -192,9 +209,10 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
         {daysOfWeek.map((day) => (
           <div
             key={day.id}
-            className="flex items-center justify-center bg-blue-400 text-white p-2 sm:p-4 rounded-lg"
+            className="flex flex-col items-center justify-center bg-blue-400 text-white p-2 sm:p-4 rounded-lg"
           >
             <h2 className="text-sm sm:text-lg font-semibold">{day.label}</h2>
+            <h2 className="text-xs sm:text-sm">{day.date}</h2>
           </div>
         ))}
       </div>
