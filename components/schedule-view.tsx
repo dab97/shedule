@@ -218,7 +218,7 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
       <div className="space-y-2 sm:space-y-4">
         {timeSlots.map((timeSlot) => (
           <div key={timeSlot} className="sm:grid sm:grid-cols-7 gap-2 sm:gap-4">
-            <div className="flex items-center justify-center border bg-sky-50 p-2 sm:p-4 rounded-lg font-semibold text-sm sm:text-base">
+            <div className="flex items-center justify-center border bg-sky-50 mb-2 sm:mb-0 p-2 sm:p-4 rounded-lg font-semibold text-sm sm:text-base">
               {timeSlot}
             </div>
 
@@ -237,7 +237,7 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
                 <Dialog key={index}>
                   <DialogTrigger asChild>
                     <div
-                      className="p-2 sm:p-3 border rounded-lg flex flex-col justify-between h-full cursor-pointer"
+                      className="mb-2 sm:mb-0 p-2 sm:p-3 border rounded-lg flex flex-col justify-between h-full cursor-pointer"
                       onClick={() => handleLessonClick(lesson)}
                     >
                       {/* Верхний блок */}
