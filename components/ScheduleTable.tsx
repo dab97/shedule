@@ -34,7 +34,7 @@ export default function ScheduleTable({ scheduleData }: ScheduleTableProps) {
 }, [scheduleData, filter, filterType]);
 
   return (
-    <div>
+    <div className="p-2">
       <div className="flex gap-4 mb-4">
         <Input
           type="text"
