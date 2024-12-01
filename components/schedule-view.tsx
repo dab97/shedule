@@ -37,6 +37,7 @@ import {
 } from "@/components/ui/select";
 import { ScheduleItem } from "../types/schedule";
 
+
 const daysOfWeek = [
   { id: "monday", label: "Пн" },
   { id: "tuesday", label: "Вт" },
@@ -45,7 +46,6 @@ const daysOfWeek = [
   { id: "friday", label: "Пт" },
   { id: "saturday", label: "Сб" },
 ];
-
 const timeSlots = [
   "08.30 - 10.00",
   "10.10 - 11.40",
@@ -206,7 +206,7 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
         <div className="flex items-center justify-center bg-blue-400 p-2 sm:p-4 rounded-lg">
           <span className="sr-only">Время</span>
         </div>
-        {daysOfWeek.map((day) => (
+        {daysWithDates.map((day) => (
           <div
             key={day.id}
             className="flex flex-col items-center justify-center bg-blue-400 text-white p-2 sm:p-4 rounded-lg"
@@ -214,7 +214,7 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
             <h2 className="text-sm sm:text-lg font-semibold">{day.label}</h2>
             <h2 className="text-xs sm:text-sm">{day.date}</h2>
           </div>
-        ))}
+        ))}        
       </div>
 
       <div className="space-y-2 sm:space-y-4">
