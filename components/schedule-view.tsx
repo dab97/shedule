@@ -220,7 +220,7 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
       <div className="space-y-2 sm:space-y-4">
         {timeSlots.map((timeSlot) => (
           <div key={timeSlot} className="sm:grid sm:grid-cols-7 gap-2 sm:gap-4">
-            <div className="flex items-center justify-center border bg-sky-50 mb-2 sm:mb-0 p-2 sm:p-4 rounded-lg font-semibold text-sm sm:text-base">
+            <div className="flex items-center justify-center border text-slate-500 bg-slate-50 mb-2 sm:mb-0 p-2 sm:p-4 rounded-lg font-black text-sm sm:text-2xl">
               {timeSlot}
             </div>
 
@@ -256,7 +256,7 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
                         </div>
                         <div className="flex items-center justify-end space-x-2">
                           <MapPin className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-xs sm:text-xs text-right">
+                          <span className="text-xs sm:text-xs text-right ">
                             ауд. {lesson.classroom}
                           </span>
                         </div>
@@ -292,7 +292,7 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
               ) : (
                 <div
                   key={index}
-                  className="p-2 sm:p-4 border bg-sky-50 rounded-lg border-dashed mt-2 sm:mt-0"
+                  className="p-2 sm:p-4 border bg-slate-50 rounded-lg border-dashed mt-2 sm:mt-0"
                 />
               );
             })}
