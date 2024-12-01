@@ -184,22 +184,6 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
         </div>
       </div>
 
-{/*       {/* Mobile day selector */}
-      <div className="sm:hidden">
-        <Select value={selectedDay} onValueChange={setSelectedDay}>
-          <SelectTrigger>
-            <SelectValue placeholder="Выберите день" />
-          </SelectTrigger>
-          <SelectContent>
-            {daysOfWeek.map((day) => (
-              <SelectItem key={day.id} value={day.id}>
-                {day.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div> */}
-
       {/* Desktop day headers */}
       <div className="hidden sm:grid sm:grid-cols-7 gap-2 sm:gap-4">
         <div className="flex items-center justify-center bg-blue-400 p-2 sm:p-4 rounded-lg">
@@ -228,10 +212,6 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
                   item.time === timeSlot &&
                   item.dayOfWeek.toLowerCase().includes(day.label.toLowerCase())
               );
-              // // Скрыть дни, которые не выбраны, только на мобильных устройствах
-              // if (isMobile && day.id !== selectedDay) {
-              //   return null;
-              // }
 
               return lesson ? (
                 <Dialog key={index}>
