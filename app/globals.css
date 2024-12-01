@@ -19,7 +19,7 @@
 
 @layer base {
   body {
-    font-family: 'Inter', sans-serif;
+    font-family: 'ui-sans-serif', 'system-ui', 'Inter', sans-serif;
   }
   h1, h2, h3, strong {
     font-family: 'Evolventa', sans-serif;
