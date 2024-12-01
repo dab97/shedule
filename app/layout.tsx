@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/react"
 import localFont from "next/font/local";
 import "./globals.css";
 
@@ -38,7 +39,8 @@ export default function RootLayout({
       <body
         className={`${evolventaSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <Analytics />
+        children}
       </body>
     </html>
   );
