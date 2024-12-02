@@ -1,8 +1,9 @@
-import type { Metadata } from "next";
-import { Analytics } from "@vercel/analytics/react"
+import Head from "next/head"; // Импорт для работы с мета-тегами
+import { Analytics } from "@vercel/analytics/react";
 import localFont from "next/font/local";
 import "./globals.css";
 
+// Подключение шрифтов
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
@@ -15,30 +16,33 @@ const geistMono = localFont({
 });
 const evolventaSans = localFont({
   src: "./fonts/Evolventa-Regular.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
+  variable: "--font-evolventa-sans",
+  weight: "400",
 });
 const evolventaBold = localFont({
   src: "./fonts/Evolventa-Bold.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
+  variable: "--font-evolventa-bold",
+  weight: "700",
 });
 
-export const metadata: Metadata = {
-  title: "Расписание занятий на 29.11-14.12",
-  description: "Актуальное расписание занятий на 29.11.2024 - 14.12.2024",
-};
-
+// RootLayout компонент
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="en">
-      <body
-        className={`${evolventaSans.variable} ${geistMono.variable} antialiased`}
-      >       
+    <html lang="en" className={`${evolventaSans.variable} ${geistMono.variable}`}>
+      <Head>
+        <title>Расписание занятий на 29.11-14.12</title>
+        <meta name="description" content="Актуальное расписание занятий на 29.11.2024 - 14.12.2024" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta property="og:title" content="Расписание занятий на 29.11-14.12" />
+        <meta property="og:description" content="Актуальное расписание занятий на 29.11.2024 - 14.12.2024" />
+        <meta name="theme-color" content="#ffffff" />
+        <link rel="icon" type="image/png" href="/favicon.png" />     
+      </Head>
+      <body className="antialiased">
         {children}
         <Analytics />
       </body>
