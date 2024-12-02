@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import {
   Dialog,
   DialogContent,
@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { format, startOfWeek, addDays, parse, isWithinInterval } from "date-fns";
 import { ru } from "date-fns/locale";
-import { CalendarIcon, MapPin } from 'lucide-react';
+import { CalendarIcon, MapPin, Clock } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -88,7 +88,6 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
         (selectedGroup === "all" || item.group === selectedGroup) &&
         (selectedTeacher === "all" || item.teacher === selectedTeacher) &&
         item.teacher.toLowerCase().includes(searchTerm.toLowerCase()) &&
-
         isWithinInterval(itemDate, { start, end })
       );
     });
@@ -97,31 +96,10 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
   const uniqueGroups = Array.from(new Set(scheduleData.map((item) => item.group)));
   const uniqueTeachers = Array.from(new Set(scheduleData.map((item) => item.teacher)));
 
-  const useIsMobile = () => {
-    const [isMobile, setIsMobile] = useState(false);
-
-    useEffect(() => {
-      const handleResize = () => {
-        setIsMobile(window.innerWidth < 640);
-      };
-
-      handleResize();
-      window.addEventListener("resize", handleResize);
-
-      return () => {
-        window.removeEventListener("resize", handleResize);
-      };
-    }, []);
-
-    return isMobile;
-  };
-
-  const isMobile = useIsMobile();
-
   return (
-    <div className="container mx-auto p-2 sm:p-4 space-y-4 sm:space-y-6">
-      <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
-        <div className="min-w-48 space-y-1 sm:space-y-2">
+    <div className="container mx-auto p-4 space-y-6 overflow-x-auto">
+      <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
+        <div className="min-w-48 space-y-2">
           <label className="text-sm font-medium">Группа</label>
           <Select onValueChange={(value) => setSelectedGroup(value)}>
             <SelectTrigger>
@@ -141,7 +119,7 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
           </Select>
         </div>
 
-        <div className="min-w-80 space-y-1 sm:space-y-2">
+        <div className="min-w-48 space-y-2">
           <label className="text-sm font-medium">Преподаватель</label>
           <Select onValueChange={(value) => setSelectedTeacher(value)}>
             <SelectTrigger>
@@ -161,7 +139,7 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
           </Select>
         </div>
 
-        <div className="min-w-48 space-y-1 sm:space-y-2">
+        <div className="min-w-48 space-y-2">
           <label className="text-sm font-medium">Неделя</label>
           <Popover>
             <PopoverTrigger asChild>
@@ -190,29 +168,131 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
         </div>
       </div>
 
-      <h2 className="text-xl font-bold mb-4">
+      <h2 className="text-gray-600 text-center text-xl font-bold mb-4">
         Расписание на неделю: {format(getCurrentWeekDates().start, "dd.MM.yyyy")} - {format(getCurrentWeekDates().end, "dd.MM.yyyy")}
       </h2>
 
-      <div className="hidden sm:grid sm:grid-cols-7 gap-2 sm:gap-4">
-        <div className="flex items-center justify-center bg-blue-400 p-2 sm:p-4 rounded-lg">
-          <span className="sr-only">Время</span>
-        </div>
-        {daysWithDates.map((day) => (
-          <div
-            key={day.id}
-            className="flex flex-col items-center justify-center bg-blue-400 text-white p-2 sm:p-4 rounded-lg"
-          >
-            <h2 className="text-sm sm:text-lg font-semibold">{day.label}</h2>
-            <h2 className="text-xs sm:text-sm">{day.date}</h2>
-          </div>
-        ))}
+      {/* Мобильная версия */}
+      <div className="block sm:hidden space-y-6">
+        {daysWithDates.map((day) => {
+          // Проверяем, есть ли занятия в этот день на текущей неделе
+          const hasLessons = timeSlots.some((timeSlot) =>
+            filteredData.some(
+              (item) =>
+                item.time === timeSlot &&
+                item.dayOfWeek.toLowerCase().includes(day.label.toLowerCase()) &&
+                isWithinInterval(parse(item.date, "dd.MM.yyyy", new Date()), {
+                  start: getCurrentWeekDates().start,
+                  end: getCurrentWeekDates().end,
+                })
+            )
+          );
+
+          // Если нет занятий на текущей неделе, не рендерим заголовок дня
+          if (!hasLessons) {
+            return null; // Пропускаем рендеринг, если нет занятий
+          }
+
+          return (
+            <div key={`${day.label}-${day.date}`} className="space-y-2">
+              <div className="bg-blue-500 text-white p-4 rounded-lg font-semibold">
+                {day.label} ({day.date})
+              </div>
+              {timeSlots.map((timeSlot) => {
+                const lesson = filteredData.find(
+                  (item) =>
+                    item.time === timeSlot &&
+                    item.dayOfWeek.toLowerCase().includes(day.label.toLowerCase()) &&
+                    isWithinInterval(parse(item.date, "dd.MM.yyyy", new Date()), {
+                      start: getCurrentWeekDates().start,
+                      end: getCurrentWeekDates().end,
+                    })
+                );
+
+                return lesson ? (
+                  <Dialog key={lesson.id}>
+                    <DialogTrigger asChild>
+                      <div
+                        className="p-3 border rounded-lg flex flex-col justify-between bg-slate-100 cursor-pointer"
+                        onClick={() => handleLessonClick(lesson)}
+                      >
+                        <div className="space-y-1 leading-relaxed">
+                          <div className="font-semibold text-sm">{lesson.subject}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {lesson.lessonType}
+                          </div>
+                        </div>
+                        <div className="mt-4 space-y-1 flex-grow flex flex-col">
+                          <div className="flex flex-row items-center justify-end space-x-2">
+                            <span className="text-xs text-right">{lesson.teacher}</span>
+                          </div>
+                          <div className="flex items-center justify-between space-x-2 mt-auto">
+                            <div className="flex items-center justify-start space-x-2">
+                              <Clock className="h-4 w-4 text-slate-400" />
+                              <span className="text-xs text-left">{lesson.time}</span>
+                            </div>
+                            <div className="flex items-center justify-end space-x-2">
+                              <MapPin className="h-4 w-4 text-slate-400" />
+                              <span className="text-xs text-right">{lesson.classroom}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </DialogTrigger>
+                    <DialogContent aria-describedby={`description-${lesson.id}`}>
+                      <DialogHeader>
+                        <DialogTitle>{lesson.subject}</DialogTitle>
+                      </DialogHeader>
+                      <div id={`description-${lesson.id}`} className="text-sm text-muted-foreground">
+                        <p>
+                          <strong>Тип занятия:</strong> {lesson.lessonType}
+                        </p>
+                        <p>
+                          <strong>Преподаватель:</strong> {lesson.teacher}
+                        </p>
+                        <p>
+                          <strong>Группа:</strong> {lesson.group}
+                        </p>
+                        <p>
+                          <strong>Аудитория:</strong> {lesson.classroom}
+                        </p>
+                        <p>
+                          <strong>Дата:</strong> {lesson.date}
+                        </p>
+                        <p>
+                          <strong>Время:</strong> {lesson.time}
+                        </p>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                ) : null;
+              })}
+            </div>
+          );
+        })}
       </div>
 
-      <div className="space-y-2 sm:space-y-4">
+
+      {/* Десктопная версия */}
+      <div className="hidden sm:block space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-[repeat(7,minmax(200px,1fr))] gap-4">
+          <div className="flex flex-col items-center justify-center bg-blue-500 text-white p-4 rounded-lg">
+            <h2 className="text-sm sm:text-lg font-semibold">Время</h2>
+          </div>
+          {daysWithDates.map((day) => (
+            <div
+              key={day.id}
+              className="flex flex-col items-center justify-center bg-blue-500 text-white p-4 rounded-lg"
+            >
+              <h2 className="text-sm sm:text-lg font-semibold">{day.label}</h2>
+              <h2 className="text-xs sm:text-sm">{day.date}</h2>
+            </div>
+          ))}
+        </div>
+
         {timeSlots.map((timeSlot) => (
-          <div key={timeSlot} className="sm:grid sm:grid-cols-7 gap-2 sm:gap-4">
-            <div className="flex items-center justify-center border text-slate-500 bg-slate-50 mb-2 sm:mb-0 p-2 sm:p-4 rounded-lg font-black text-sm sm:text-2xl">
+          <div key={timeSlot} className="grid grid-cols-1 md:grid-cols-[repeat(7,minmax(200px,1fr))] gap-4">
+            <div className="flex items-center justify-center border text-slate-500 bg-slate-50 p-4 rounded-lg font-black text-sm sm:text-2xl">
               {timeSlot}
             </div>
 
@@ -220,33 +300,37 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
               const lesson = filteredData.find(
                 (item) =>
                   item.time === timeSlot &&
-                  item.dayOfWeek.toLowerCase().includes(day.label.toLowerCase())
+                  item.dayOfWeek.toLowerCase().includes(day.label.toLowerCase()) &&
+                  isWithinInterval(parse(item.date, "dd.MM.yyyy", new Date()), {
+                    start: getCurrentWeekDates().start,
+                    end: getCurrentWeekDates().end,
+                  })
               );
 
               return lesson ? (
-                <Dialog key={index}>
+                <Dialog key={lesson.id}>
                   <DialogTrigger asChild>
                     <div
-                      className="mb-2 sm:mb-0 p-2 sm:p-3 border rounded-lg flex flex-col justify-between h-full cursor-pointer"
+                      className="p-3 border rounded-lg flex flex-col justify-between h-full cursor-pointer"
                       onClick={() => handleLessonClick(lesson)}
                     >
                       <div className="space-y-1 leading-relaxed">
-                        <div className="font-semibold text-sm sm:text-sm">
+                        <div className="font-semibold text-sm">
                           {lesson.subject}
                         </div>
-                        <div className="text-xs sm:text-sm text-muted-foreground">
+                        <div className="text-xs text-muted-foreground">
                           {lesson.lessonType}
                         </div>
                       </div>
                       <div className="mt-4 space-y-1">
                         <div className="flex items-center justify-end space-x-2">
-                          <span className="text-xs sm:text-xs text-right">
+                          <span className="text-xs text-right">
                             {lesson.teacher}
                           </span>
                         </div>
                         <div className="flex items-center justify-end space-x-2">
                           <MapPin className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-xs sm:text-xs text-right ">
+                          <span className="text-xs text-right">
                             ауд. {lesson.classroom}
                           </span>
                         </div>
@@ -254,10 +338,10 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
                     </div>
                   </DialogTrigger>
                   <DialogContent>
-                    <DialogHeader className="mt-6 mb-2">
+                    <DialogHeader>
                       <DialogTitle>{lesson.subject}</DialogTitle>
                     </DialogHeader>
-                    <div className="">
+                    <div>
                       <p>
                         <strong>Тип занятия:</strong> {lesson.lessonType}
                       </p>
@@ -280,10 +364,9 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
                   </DialogContent>
                 </Dialog>
               ) : (
-                <div
-                  key={index}
-                  className="p-2 sm:p-4 border bg-slate-50 rounded-lg border-dashed mt-2 sm:mt-0"
-                />
+                <div key={day.id} className="flex items-center justify-center p-4 border text-slate-400 bg-slate-50 rounded-lg border-dashed">
+                  Нет занятий
+                </div>
               );
             })}
           </div>
