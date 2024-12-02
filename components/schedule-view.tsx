@@ -4,22 +4,13 @@ import { useState, useEffect, useMemo } from "react";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { format, startOfWeek, addDays } from "date-fns";
+import { format, startOfWeek, addDays, parse, isWithinInterval } from "date-fns";
 import { ru } from "date-fns/locale";
-import {
-  CalendarIcon,
-  GraduationCap,
-  User,
-  MapPin,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
-// import {  AcademicCapIcon, UserIcon, MapPinIcon} from "@heroicons/react/outline";
+import { CalendarIcon, MapPin } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -37,7 +28,6 @@ import {
 } from "@/components/ui/select";
 import { ScheduleItem } from "../types/schedule";
 
-
 const daysOfWeek = [
   { id: "monday", label: "Пн" },
   { id: "tuesday", label: "Вт" },
@@ -46,6 +36,7 @@ const daysOfWeek = [
   { id: "friday", label: "Пт" },
   { id: "saturday", label: "Сб" },
 ];
+
 const timeSlots = [
   "08.30 - 10.00",
   "10.10 - 11.40",
@@ -62,77 +53,68 @@ interface ScheduleViewProps {
 }
 
 export function ScheduleView({ scheduleData }: ScheduleViewProps) {
-  const [date, setDate] = useState<Date>();
+  const [date, setDate] = useState<Date>(new Date());
   const [selectedGroup, setSelectedGroup] = useState<string>("all");
   const [selectedTeacher, setSelectedTeacher] = useState<string>("all");
-  const [selectedDay, setSelectedDay] = useState<string>("monday");
-  const [windowWidth, setWindowWidth] = useState<number | null>(null);
-  const [selectedLesson, setSelectedLesson] = useState<ScheduleItem | null>(
-    null
-  );
+  const [selectedLesson, setSelectedLesson] = useState<ScheduleItem | null>(null);
 
-    // Начало недели
-    const startDate = useMemo(() => {
-      const currentDate = date || new Date();
-      return startOfWeek(currentDate, { weekStartsOn: 1 });
-    }, [date]);
-  
-    // Генерация дней недели с датами
-    const daysWithDates = useMemo(() => {
-      return daysOfWeek.map((day, index) => {
-        const currentDay = addDays(startDate, index);
-        return {
-          ...day,
-          date: format(currentDay, "dd.MM"), // Форматируем дату
-        };
-      });
-    }, [startDate]);
+  const getCurrentWeekDates = () => {
+    const start = startOfWeek(date, { weekStartsOn: 1 });
+    const end = addDays(start, 6);
+    return { start, end };
+  };
+
+  const daysWithDates = useMemo(() => {
+    const { start } = getCurrentWeekDates();
+    return daysOfWeek.map((day, index) => {
+      const currentDay = addDays(start, index);
+      return {
+        ...day,
+        date: format(currentDay, "dd.MM"),
+      };
+    });
+  }, [date]);
 
   const handleLessonClick = (lesson: ScheduleItem) => {
-    setSelectedLesson(lesson); // Устанавливаем выбранное занятие
+    setSelectedLesson(lesson);
   };
 
   const filteredData = useMemo(() => {
-    return scheduleData.filter(
-      (item) =>
+    const { start, end } = getCurrentWeekDates();
+    return scheduleData.filter((item) => {
+      const itemDate = parse(item.date, "dd.MM.yyyy", new Date());
+      return (
         (selectedGroup === "all" || item.group === selectedGroup) &&
         (selectedTeacher === "all" || item.teacher === selectedTeacher) &&
-        (!date || item.date === format(date, "dd.MM.yyyy"))
-    );
+        isWithinInterval(itemDate, { start, end })
+      );
+    });
   }, [scheduleData, selectedGroup, selectedTeacher, date]);
 
-  const uniqueGroups = Array.from(
-    new Set(scheduleData.map((item) => item.group))
-  );
-  const uniqueTeachers = Array.from(
-    new Set(scheduleData.map((item) => item.teacher))
-  );
+  const uniqueGroups = Array.from(new Set(scheduleData.map((item) => item.group)));
+  const uniqueTeachers = Array.from(new Set(scheduleData.map((item) => item.teacher)));
 
-  const isClient = typeof window !== "undefined";
-
-  function useIsMobile() {
+  const useIsMobile = () => {
     const [isMobile, setIsMobile] = useState(false);
 
     useEffect(() => {
-      if (isClient) {
-        const handleResize = () => {
-          setIsMobile(window.innerWidth < 640);
-        };
+      const handleResize = () => {
+        setIsMobile(window.innerWidth < 640);
+      };
 
-        handleResize(); // Установить состояние при первом рендере
-        window.addEventListener("resize", handleResize);
+      handleResize();
+      window.addEventListener("resize", handleResize);
 
-        return () => {
-          window.removeEventListener("resize", handleResize);
-        };
-      }
+      return () => {
+        window.removeEventListener("resize", handleResize);
+      };
     }, []);
 
     return isMobile;
-  }
+  };
 
-  // Внутри компонента
   const isMobile = useIsMobile();
+
   return (
     <div className="container mx-auto p-2 sm:p-4 space-y-4 sm:space-y-6">
       <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
@@ -171,7 +153,7 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
         </div>
 
         <div className="min-w-48 space-y-1 sm:space-y-2">
-          <label className="text-sm font-medium">Дата</label>
+          <label className="text-sm font-medium">Неделя</label>
           <Popover>
             <PopoverTrigger asChild>
               <Button
@@ -182,26 +164,27 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
                 )}
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
-                {date ? format(date, "dd.MM.yyyy") : "дд.мм.гггг"}
+                {format(date, "dd.MM.yyyy")}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
               <Calendar
                 mode="single"
                 selected={date}
-                onSelect={(newDate) => {
-                  setDate(newDate);
-                }}
+                onSelect={(newDate) => newDate && setDate(newDate)}
                 initialFocus
-                weekStartsOn={1} // Установка недели с понедельника
-                locale={ru} // Русская локализация
+                weekStartsOn={1}
+                locale={ru}
               />
             </PopoverContent>
           </Popover>
         </div>
       </div>
 
-      {/* Desktop day headers */}
+      <h2 className="text-xl font-bold mb-4">
+        Расписание на неделю: {format(getCurrentWeekDates().start, "dd.MM.yyyy")} - {format(getCurrentWeekDates().end, "dd.MM.yyyy")}
+      </h2>
+
       <div className="hidden sm:grid sm:grid-cols-7 gap-2 sm:gap-4">
         <div className="flex items-center justify-center bg-blue-400 p-2 sm:p-4 rounded-lg">
           <span className="sr-only">Время</span>
@@ -214,7 +197,7 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
             <h2 className="text-sm sm:text-lg font-semibold">{day.label}</h2>
             <h2 className="text-xs sm:text-sm">{day.date}</h2>
           </div>
-        ))}        
+        ))}
       </div>
 
       <div className="space-y-2 sm:space-y-4">
@@ -238,7 +221,6 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
                       className="mb-2 sm:mb-0 p-2 sm:p-3 border rounded-lg flex flex-col justify-between h-full cursor-pointer"
                       onClick={() => handleLessonClick(lesson)}
                     >
-                      {/* Верхний блок */}
                       <div className="space-y-1 leading-relaxed">
                         <div className="font-semibold text-sm sm:text-sm">
                           {lesson.subject}
@@ -247,7 +229,6 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
                           {lesson.lessonType}
                         </div>
                       </div>
-                      {/* Нижний блок */}
                       <div className="mt-4 space-y-1">
                         <div className="flex items-center justify-end space-x-2">
                           <span className="text-xs sm:text-xs text-right">
