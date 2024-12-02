@@ -1,4 +1,5 @@
 export interface ScheduleItem {
+  id: string;
   group: string
   dayOfWeek: string
   date: string
