@@ -56,6 +56,7 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
   const [date, setDate] = useState<Date>(new Date());
   const [selectedGroup, setSelectedGroup] = useState<string>("all");
   const [selectedTeacher, setSelectedTeacher] = useState<string>("all");
+  const [searchTerm, setSearchTerm] = useState<string>("");
   const [selectedLesson, setSelectedLesson] = useState<ScheduleItem | null>(null);
 
   const getCurrentWeekDates = () => {
@@ -86,6 +87,8 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
       return (
         (selectedGroup === "all" || item.group === selectedGroup) &&
         (selectedTeacher === "all" || item.teacher === selectedTeacher) &&
+        item.teacher.toLowerCase().includes(searchTerm.toLowerCase()) &&
+
         isWithinInterval(itemDate, { start, end })
       );
     });
@@ -126,11 +129,14 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Все группы</SelectItem>
-              {uniqueGroups.map((group) => (
-                <SelectItem key={group} value={group}>
-                  {group}
-                </SelectItem>
-              ))}
+              {uniqueGroups
+                .slice()
+                .sort((a, b) => a.localeCompare(b))
+                .map((group) => (
+                  <SelectItem key={group} value={group}>
+                    {group}
+                  </SelectItem>
+                ))}
             </SelectContent>
           </Select>
         </div>
@@ -143,11 +149,14 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Все преподаватели</SelectItem>
-              {uniqueTeachers.map((teacher) => (
-                <SelectItem key={teacher} value={teacher}>
-                  {teacher}
-                </SelectItem>
-              ))}
+              {uniqueTeachers
+                .slice()
+                .sort((a, b) => a.localeCompare(b))
+                .map((teacher) => (
+                  <SelectItem key={teacher} value={teacher}>
+                    {teacher}
+                  </SelectItem>
+                ))}
             </SelectContent>
           </Select>
         </div>
