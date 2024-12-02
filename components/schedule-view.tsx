@@ -8,6 +8,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer"
 import { format, startOfWeek, addDays, parse, isWithinInterval } from "date-fns";
 import { ru } from "date-fns/locale";
 import { CalendarIcon, MapPin, Clock } from 'lucide-react';
@@ -210,8 +217,8 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
                 );
 
                 return lesson ? (
-                  <Dialog key={lesson.id}>
-                    <DialogTrigger asChild>
+                  <Drawer key={lesson.id}>
+                    <DrawerTrigger asChild>
                       <div
                         className="p-3 border rounded-lg flex flex-col justify-between bg-slate-100 cursor-pointer"
                         onClick={() => handleLessonClick(lesson)}
@@ -238,12 +245,12 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
                           </div>
                         </div>
                       </div>
-                    </DialogTrigger>
-                    <DialogContent aria-describedby={`description-${lesson.id}`}>
-                      <DialogHeader>
-                        <DialogTitle>{lesson.subject}</DialogTitle>
-                      </DialogHeader>
-                      <div id={`description-${lesson.id}`} className="text-sm text-muted-foreground">
+                    </DrawerTrigger>
+                    <DrawerContent aria-describedby={`description-${lesson.id}`}>
+                      <DrawerHeader className="pt-10">
+                        <DrawerTitle>{lesson.subject}</DrawerTitle>
+                      </DrawerHeader>
+                      <div id={`description-${lesson.id}`} className="px-4 pb-8 text-sm text-muted-foreground">
                         <p>
                           <strong>Тип занятия:</strong> {lesson.lessonType}
                         </p>
@@ -263,8 +270,8 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
                           <strong>Время:</strong> {lesson.time}
                         </p>
                       </div>
-                    </DialogContent>
-                  </Dialog>
+                    </DrawerContent>
+                  </Drawer>
                 ) : null;
               })}
             </div>
