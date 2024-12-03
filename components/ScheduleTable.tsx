@@ -1,7 +1,9 @@
 'use client'
 
 import { useState, useMemo } from 'react';
-import { ScheduleItem } from '../types/schedule';
+import { ScheduleItem } from '@/types/schedule';
+import { FileDown } from 'lucide-react';
+
 import {
   Table,
   TableBody,
@@ -18,20 +20,62 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Button } from "@/components/ui/button"
+import jsPDF from 'jspdf'
+import 'jspdf-autotable'
+import { Metadata } from "@/app/layout";
 
 interface ScheduleTableProps {
   scheduleData: ScheduleItem[];
+  metadata: {
+    title: string;
+    description: string;
+  };
 }
 
-export default function ScheduleTable({ scheduleData }: ScheduleTableProps) {
+export default function ScheduleTable({ scheduleData, metadata }: ScheduleTableProps) {
   const [filter, setFilter] = useState('');
   const [filterType, setFilterType] = useState('group');
 
   const filteredData = useMemo(() => {
-  return scheduleData.filter(item =>
-    item[filterType as keyof ScheduleItem].toLowerCase().includes(filter.toLowerCase())
-  );
-}, [scheduleData, filter, filterType]);
+    return scheduleData.filter(item =>
+      item[filterType as keyof ScheduleItem].toLowerCase().includes(filter.toLowerCase())
+    );
+  }, [scheduleData, filter, filterType]);
+
+  const downloadPDF = () => {
+    const currentDate = new Date().toLocaleDateString('ru-RU', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+    // const fileName = `${metadata.title}.pdf`;
+    // const fileName = `Расписание на ${currentDate}.pdf`;
+    const doc = new jsPDF();
+    
+    // Добавляем шрифт для поддержки русских символов
+    doc.addFont('https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Regular.ttf', 'Roboto', 'normal');
+    doc.setFont('Roboto');
+
+    // @ts-ignore
+    doc.autoTable({
+      head: [['Группа', 'День недели', 'Дата', 'Время', 'Дисциплина', 'Вид занятия', 'Преподаватель', 'Аудитория']],
+      body: filteredData.map(item => [
+        item.group,
+        item.dayOfWeek,
+        item.date,
+        item.time,
+        item.subject,
+        item.lessonType,
+        item.teacher,
+        item.classroom
+      ]),
+      styles: { font: 'Roboto', fontSize: 10 },
+      headStyles: { fillColor: [200, 200, 200], textColor: 0, fontStyle: 'bold',valign: 'middle', halign: 'center' },
+    });
+
+    doc.save(`${Metadata.title}.pdf`);
+  };
 
   return (
     <div className="p-2">
@@ -54,6 +98,9 @@ export default function ScheduleTable({ scheduleData }: ScheduleTableProps) {
             <SelectItem value="teacher">Преподаватель</SelectItem>
           </SelectContent>
         </Select>
+        <Button variant="outline" onClick={downloadPDF} className="ml-auto">
+          <FileDown/>Скачать PDF
+        </Button>
       </div>
       <Table className='border text-xs sm:text-sm'>
         <TableHeader className='border text-center bg-slate-100 dark:bg-gray-900'>

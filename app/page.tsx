@@ -36,7 +36,7 @@ export default async function SchedulePage() {
       {scheduleData.length > 0 ? (
         <ScheduleTabs scheduleData={scheduleData} />
       ) : (
-        <Alert>
+        <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Внимание</AlertTitle>
           <AlertDescription>
