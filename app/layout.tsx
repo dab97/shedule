@@ -1,5 +1,6 @@
 import Head from "next/head";
 import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next"
 import { ThemeProvider } from "next-themes";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
 import localFont from "next/font/local";
@@ -58,6 +59,7 @@ export default function RootLayout({
           <ThemeSwitcher />
           {children}
           <Analytics />
+          <SpeedInsights/>
         </body>
       </ThemeProvider>
     </html>
