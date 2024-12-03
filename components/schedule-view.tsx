@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useMemo } from "react";
 import {
   Dialog,
@@ -146,19 +145,19 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
           </Select>
         </div>
 
-        <div className="min-w-48 space-y-2">
+        <div className="min-w-40 space-y-2">
           <label className="text-sm font-medium">Неделя</label>
           <Popover>
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
                 className={cn(
-                  "w-full justify-center text-left font-normal",
+                  "w-full justify-between text-left font-normal",
                   !date && "text-muted-foreground"
                 )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
+              >                
                 {format(date, "dd.MM.yyyy")}
+                <CalendarIcon className="h-4 w-4" />
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
@@ -172,10 +171,10 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
               />
             </PopoverContent>
           </Popover>
-        </div>
+        </div>        
       </div>
 
-      <h2 className="text-gray-600 text-center text-xl font-bold mb-4">
+      <h2 className="text-center text-xl font-bold mb-4">
         Расписание на неделю: {format(getCurrentWeekDates().start, "dd.MM.yyyy")} - {format(getCurrentWeekDates().end, "dd.MM.yyyy")}
       </h2>
 
@@ -202,7 +201,7 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
 
           return (
             <div key={`${day.label}-${day.date}`} className="space-y-2">
-              <div className="bg-blue-500 text-white p-4 rounded-lg font-semibold">
+              <div className="bg-blue-500 dark:bg-slate-900 text-center text-white p-4 rounded-lg font-semibold">
                 {day.label} ({day.date})
               </div>
               {timeSlots.map((timeSlot) => {
@@ -220,7 +219,7 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
                   <Drawer key={lesson.id}>
                     <DrawerTrigger asChild>
                       <div
-                        className="p-3 border rounded-lg flex flex-col justify-between bg-slate-100 cursor-pointer"
+                        className="p-3 border rounded-lg flex flex-col justify-between cursor-pointer"
                         onClick={() => handleLessonClick(lesson)}
                       >
                         <div className="space-y-1 leading-relaxed">
@@ -235,11 +234,11 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
                           </div>
                           <div className="flex items-center justify-between space-x-2 mt-auto">
                             <div className="flex items-center justify-start space-x-2">
-                              <Clock className="h-4 w-4 text-slate-400" />
+                              <Clock className="h-4 w-4" />
                               <span className="text-xs text-left">{lesson.time}</span>
                             </div>
                             <div className="flex items-center justify-end space-x-2">
-                              <MapPin className="h-4 w-4 text-slate-400" />
+                              <MapPin className="h-4 w-4" />
                               <span className="text-xs text-right">{lesson.classroom}</span>
                             </div>
                           </div>
@@ -283,13 +282,13 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
       {/* Десктопная версия */}
       <div className="hidden sm:block space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-[repeat(7,minmax(200px,1fr))] gap-4">
-          <div className="flex flex-col items-center justify-center bg-blue-500 text-white p-4 rounded-lg">
+          <div className="flex flex-col items-center justify-center bg-blue-500 dark:bg-slate-900 text-white p-4 rounded-lg">
             <h2 className="text-sm sm:text-lg font-semibold">Время</h2>
           </div>
           {daysWithDates.map((day) => (
             <div
               key={day.id}
-              className="flex flex-col items-center justify-center bg-blue-500 text-white p-4 rounded-lg"
+              className="flex flex-col items-center justify-center bg-blue-500 dark:bg-slate-900 text-white p-4 rounded-lg"
             >
               <h2 className="text-sm sm:text-lg font-semibold">{day.label}</h2>
               <h2 className="text-xs sm:text-sm">{day.date}</h2>
@@ -299,7 +298,7 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
 
         {timeSlots.map((timeSlot) => (
           <div key={timeSlot} className="grid grid-cols-1 md:grid-cols-[repeat(7,minmax(200px,1fr))] gap-4">
-            <div className="flex items-center justify-center border text-slate-500 bg-slate-50 p-4 rounded-lg font-black text-sm sm:text-2xl">
+            <div className="flex items-center justify-center border text-slate-500 dark:text-slate-50 bg-slate-50 dark:bg-slate-900 p-4 rounded-lg font-black text-sm sm:text-2xl">
               {timeSlot}
             </div>
 
@@ -371,7 +370,7 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
                   </DialogContent>
                 </Dialog>
               ) : (
-                <div key={day.id} className="flex items-center justify-center p-4 border text-slate-400 bg-slate-50 rounded-lg border-dashed">
+                <div key={day.id} className="flex items-center justify-center p-4 border text-inherit bg-slate-50 dark:bg-slate-900 rounded-lg border-dashed">
                   Нет занятий
                 </div>
               );

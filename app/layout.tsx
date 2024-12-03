@@ -1,5 +1,7 @@
-import Head from "next/head"; // Импорт для работы с мета-тегами
+import Head from "next/head";
 import { Analytics } from "@vercel/analytics/react";
+import { ThemeProvider } from "next-themes";
+import ThemeSwitcher from "@/components/ThemeSwitcher";
 import localFont from "next/font/local";
 import "./globals.css";
 
@@ -32,20 +34,32 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${evolventaSans.variable} ${geistMono.variable}`}>
+    <html
+      lang="en"
+      className={`${evolventaSans.variable} ${geistMono.variable}`}
+    >
       <Head>
         <title>Расписание занятий на 29.11-14.12</title>
-        <meta name="description" content="Актуальное расписание занятий на 29.11.2024 - 14.12.2024" />
+        <meta
+          name="description"
+          content="Актуальное расписание занятий на 29.11.2024 - 14.12.2024"
+        />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta property="og:title" content="Расписание занятий на 29.11-14.12" />
-        <meta property="og:description" content="Актуальное расписание занятий на 29.11.2024 - 14.12.2024" />
+        <meta
+          property="og:description"
+          content="Актуальное расписание занятий на 29.11.2024 - 14.12.2024"
+        />
         <meta name="theme-color" content="#ffffff" />
-        <link rel="icon" type="image/png" href="/favicon.png" />     
+        <link rel="icon" type="image/png" href="/favicon.png" />
       </Head>
-      <body className="antialiased">
-        {children}
-        <Analytics />
-      </body>
+      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <body className="antialiased">
+          <ThemeSwitcher />
+          {children}
+          <Analytics />
+        </body>
+      </ThemeProvider>
     </html>
   );
 }

@@ -56,7 +56,7 @@ export default function ScheduleTable({ scheduleData }: ScheduleTableProps) {
         </Select>
       </div>
       <Table className='border text-xs sm:text-sm'>
-        <TableHeader className='border bg-sky-50 text-center'>
+        <TableHeader className='border bg-slate-100 dark:bg-slate-900 text-center'>
           <TableRow className='border text-center'>
             <TableHead className='border text-center'>Группа</TableHead>
             <TableHead className='border text-center'>День недели</TableHead>
