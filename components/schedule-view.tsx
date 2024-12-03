@@ -201,7 +201,7 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
 
           return (
             <div key={`${day.label}-${day.date}`} className="space-y-2">
-              <div className="bg-blue-500 dark:bg-slate-900 text-center text-white p-4 rounded-lg font-semibold">
+              <div className="border  text-center p-4 rounded-lg font-semibold bg-slate-100 dark:bg-gray-900">
                 {day.label} ({day.date})
               </div>
               {timeSlots.map((timeSlot) => {
@@ -282,13 +282,13 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
       {/* Десктопная версия */}
       <div className="hidden sm:block space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-[repeat(7,minmax(200px,1fr))] gap-4">
-          <div className="flex flex-col items-center justify-center bg-blue-500 dark:bg-slate-900 text-white p-4 rounded-lg">
+          <div className="flex flex-col items-center justify-center border bg-slate-100 dark:bg-gray-900 p-4 rounded-lg">
             <h2 className="text-sm sm:text-lg font-semibold">Время</h2>
           </div>
           {daysWithDates.map((day) => (
             <div
               key={day.id}
-              className="flex flex-col items-center justify-center bg-blue-500 dark:bg-slate-900 text-white p-4 rounded-lg"
+              className="flex flex-col items-center justify-center border bg-slate-100 dark:bg-gray-900 p-4 rounded-lg"
             >
               <h2 className="text-sm sm:text-lg font-semibold">{day.label}</h2>
               <h2 className="text-xs sm:text-sm">{day.date}</h2>
@@ -298,7 +298,7 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
 
         {timeSlots.map((timeSlot) => (
           <div key={timeSlot} className="grid grid-cols-1 md:grid-cols-[repeat(7,minmax(200px,1fr))] gap-4">
-            <div className="flex items-center justify-center border text-slate-500 dark:text-slate-50 bg-slate-50 dark:bg-slate-900 p-4 rounded-lg font-black text-sm sm:text-2xl">
+            <div className="flex items-center justify-center border text-slate-500 dark:text-slate-50 bg-slate-100 dark:bg-gray-900 p-4 rounded-lg font-black text-sm sm:text-2xl">
               {timeSlot}
             </div>
 
@@ -370,7 +370,7 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
                   </DialogContent>
                 </Dialog>
               ) : (
-                <div key={day.id} className="flex items-center justify-center p-4 border text-inherit bg-slate-50 dark:bg-slate-900 rounded-lg border-dashed">
+                <div key={day.id} className="flex items-center justify-center p-4 border text-inherit bg-slate-50 dark:bg-gray-950 rounded-lg border-dashed">
                   Нет занятий
                 </div>
               );
