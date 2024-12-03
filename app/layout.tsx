@@ -35,11 +35,6 @@ export function generateViewport() {
   return "width=device-width, initial-scale=1.0";
 }
 
-// Определение `themeColor` (новый экспорт)
-export function generateThemeColor() {
-  return "#ffffff";
-}
-
 export default function RootLayout({
   children,
 }: {
