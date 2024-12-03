@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ThemeProvider } from "next-themes";
@@ -18,7 +19,7 @@ const geistMono = localFont({
 });
 
 // Определение `metadata`
-export const Metadata = {
+export const metadata: Metadata = {
   title: "Расписание занятий на 29.11-14.12",
   description: "Актуальное расписание занятий на 29.11.2024 - 14.12.2024",
   icons: {
