@@ -74,7 +74,7 @@ export default function ScheduleTable({ scheduleData, metadata }: ScheduleTableP
       headStyles: { fillColor: [200, 200, 200], textColor: 0, fontStyle: 'bold',valign: 'middle', halign: 'center' },
     });
 
-    doc.save(`${Metadata.title}.pdf`);
+    doc.save("Расписание занятий на 29.11-14.12.pdf");
   };
 
   return (
