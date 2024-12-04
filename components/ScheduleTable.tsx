@@ -26,10 +26,6 @@ import 'jspdf-autotable'
 
 interface ScheduleTableProps {
   scheduleData: ScheduleItem[];
-  metadata: {
-    title: string;
-    description: string;
-  };
 }
 
 export default function ScheduleTable({ scheduleData }: ScheduleTableProps) {
