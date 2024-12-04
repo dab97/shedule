@@ -23,7 +23,6 @@ import {
 import { Button } from "@/components/ui/button"
 import jsPDF from 'jspdf'
 import 'jspdf-autotable'
-import { Metadata } from "@/app/layout";
 
 interface ScheduleTableProps {
   scheduleData: ScheduleItem[];
