@@ -30,7 +30,7 @@ interface ScheduleTableProps {
 
 export default function ScheduleTable({ scheduleData }: ScheduleTableProps) {
   const [filter, setFilter] = useState('');
-  const [filterType, setFilterType] = useState('group');
+  const [filterType, setFilterType] = useState('teacher');
 
   const filteredData = useMemo(() => {
     return scheduleData.filter(item =>
@@ -85,10 +85,11 @@ export default function ScheduleTable({ scheduleData }: ScheduleTableProps) {
             <SelectValue placeholder="Выберите тип фильтра" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="group">Группа</SelectItem>
-            <SelectItem value="dayOfWeek">День недели</SelectItem>
-            <SelectItem value="subject">Дисциплина</SelectItem>
             <SelectItem value="teacher">Преподаватель</SelectItem>
+            <SelectItem value="dayOfWeek">День недели</SelectItem>
+            <SelectItem value="group">Группа</SelectItem>            
+            <SelectItem value="subject">Дисциплина</SelectItem>
+            <SelectItem value="classroom">Аудитория</SelectItem>            
           </SelectContent>
         </Select>
         <Button variant="outline" onClick={downloadPDF} className="ml-auto">
@@ -113,12 +114,12 @@ export default function ScheduleTable({ scheduleData }: ScheduleTableProps) {
             <TableRow key={index}>
               <TableCell className='border w-40'>{item.group}</TableCell>
               <TableCell className='border text-center'>{item.dayOfWeek}</TableCell>
-              <TableCell className='border'>{item.date}</TableCell>
-              <TableCell className='border w-28'>{item.time}</TableCell>
+              <TableCell className='bordborder text-centerer'>{item.date}</TableCell>
+              <TableCell className='border text-center w-28'>{item.time}</TableCell>
               <TableCell className='border'>{item.subject}</TableCell>
               <TableCell className='border'>{item.lessonType}</TableCell>
               <TableCell className='border'>{item.teacher}</TableCell>
-              <TableCell className='border'>{item.classroom}</TableCell>
+              <TableCell className='border text-center'>{item.classroom}</TableCell>
             </TableRow>
           ))}
         </TableBody>
