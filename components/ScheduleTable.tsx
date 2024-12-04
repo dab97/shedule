@@ -48,8 +48,6 @@ export default function ScheduleTable({ scheduleData, metadata }: ScheduleTableP
       month: 'long',
       day: 'numeric'
     });
-    // const fileName = `${metadata.title}.pdf`;
-    // const fileName = `Расписание на ${currentDate}.pdf`;
     const doc = new jsPDF();
     
     // Добавляем шрифт для поддержки русских символов
