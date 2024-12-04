@@ -80,7 +80,7 @@ export default function ScheduleTable({ scheduleData }: ScheduleTableProps) {
     <div className="p-2">
       <div className="flex flex-wrap gap-4 mb-4">
         <Select value={filterType} onValueChange={(value) => { setFilterType(value); setFilter(''); }}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="max-w-40 order-first">
             <SelectValue placeholder="Выберите тип фильтра" />
           </SelectTrigger>
           <SelectContent>
@@ -108,13 +108,13 @@ export default function ScheduleTable({ scheduleData }: ScheduleTableProps) {
           }...`}
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          className="max-w-sm"
+          className="w-full sm:w-1/4 order-last xs:order-2 text-sm"
         />
-        <Button variant="outline" onClick={downloadPDF} className="ml-auto">
+        <Button variant="outline" onClick={downloadPDF} className="order-2 sm:order-last ml-auto">
           <FileDown/>Скачать PDF
         </Button>
       </div>
-      <Table className='border text-xs sm:text-sm'>
+      <Table className='border'>
         <TableHeader className='border text-center bg-slate-100 dark:bg-gray-900'>
           <TableRow className='border text-center'>
             <TableHead className='border text-center'>Группа</TableHead>
