@@ -216,7 +216,7 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
                 );
 
                 return lesson ? (
-                  <Drawer key={lesson.id}>
+                  <Drawer>
                     <DrawerTrigger asChild>
                       <div
                         className="p-3 border rounded-lg flex flex-col justify-between cursor-pointer"
@@ -245,11 +245,11 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
                         </div>
                       </div>
                     </DrawerTrigger>
-                    <DrawerContent aria-describedby={`description-${lesson.id}`}>
+                    <DrawerContent aria-describedby={`description-${lesson}`}>
                       <DrawerHeader className="pt-10">
                         <DrawerTitle>{lesson.subject}</DrawerTitle>
                       </DrawerHeader>
-                      <div id={`description-${lesson.id}`} className="px-4 pb-8 text-sm text-muted-foreground">
+                      <div id={`description-${lesson}`} className="px-4 pb-8 text-sm text-muted-foreground">
                         <p>
                           <strong>Тип занятия:</strong> {lesson.lessonType}
                         </p>
@@ -314,7 +314,7 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
               );
 
               return lesson ? (
-                <Dialog key={lesson.id}>
+                <Dialog>
                   <DialogTrigger asChild>
                     <div
                       className="p-3 border rounded-lg flex flex-col justify-between h-full cursor-pointer"
