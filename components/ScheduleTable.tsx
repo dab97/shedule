@@ -32,7 +32,7 @@ interface ScheduleTableProps {
   };
 }
 
-export default function ScheduleTable({ scheduleData, metadata }: ScheduleTableProps) {
+export default function ScheduleTable({ scheduleData }: ScheduleTableProps) {
   const [filter, setFilter] = useState('');
   const [filterType, setFilterType] = useState('group');
 
