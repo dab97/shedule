@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { ScheduleItem } from '@/types/schedule';
 import { FileDown } from 'lucide-react';
 
@@ -12,7 +12,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -21,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input";
 import jsPDF from 'jspdf'
 import 'jspdf-autotable'
 
@@ -31,22 +31,28 @@ interface ScheduleTableProps {
 export default function ScheduleTable({ scheduleData }: ScheduleTableProps) {
   const [filter, setFilter] = useState('');
   const [filterType, setFilterType] = useState('teacher');
+  //const [filterOptions, setFilterOptions] = useState<{ value: string; label: string }[]>([]);
+
+  //useEffect(() => {
+  //  if (scheduleData && scheduleData.length > 0) {
+  //    const options = Array.from(new Set(scheduleData.map(item => item[filterType as keyof ScheduleItem]))).filter(Boolean);
+  //    setFilterOptions(options.map(option => ({ value: String(option), label: String(option) })));
+  //  } else {
+  //    setFilterOptions([]);
+  //  }
+  //}, [scheduleData, filterType]);
 
   const filteredData = useMemo(() => {
-    return scheduleData.filter(item =>
-      item[filterType as keyof ScheduleItem].toLowerCase().includes(filter.toLowerCase())
-    );
+    if (!filter || !scheduleData) return scheduleData || [];
+    return scheduleData.filter(item => {
+      const value = item[filterType as keyof ScheduleItem];
+      return value && String(value).toLowerCase().includes(filter.toLowerCase());
+    });
   }, [scheduleData, filter, filterType]);
 
   const downloadPDF = () => {
-    const currentDate = new Date().toLocaleDateString('ru-RU', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
     const doc = new jsPDF();
     
-    // Добавляем шрифт для поддержки русских символов
     doc.addFont('https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Regular.ttf', 'Roboto', 'normal');
     doc.setFont('Roboto');
 
@@ -64,23 +70,16 @@ export default function ScheduleTable({ scheduleData }: ScheduleTableProps) {
         item.classroom
       ]),
       styles: { font: 'Roboto', fontSize: 10 },
-      headStyles: { fillColor: [200, 200, 200], textColor: 0, fontStyle: 'bold',valign: 'middle', halign: 'center' },
+      headStyles: { fillColor: [200, 200, 200], textColor: 0, fontStyle: 'bold', valign: 'middle', halign: 'center' },
     });
 
-    doc.save("Расписание занятий на 29.11-14.12.pdf");
+    doc.save("Расписание занятий.pdf");
   };
 
   return (
     <div className="p-2">
-      <div className="flex gap-4 mb-4">
-        <Input
-          type="text"
-          placeholder="Фильтр..."
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          className="max-w-sm"
-        />
-        <Select value={filterType} onValueChange={setFilterType}>
+      <div className="flex flex-wrap gap-4 mb-4">
+        <Select value={filterType} onValueChange={(value) => { setFilterType(value); setFilter(''); }}>
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Выберите тип фильтра" />
           </SelectTrigger>
@@ -92,6 +91,25 @@ export default function ScheduleTable({ scheduleData }: ScheduleTableProps) {
             <SelectItem value="classroom">Аудитория</SelectItem>            
           </SelectContent>
         </Select>
+        <Input
+          type="text"
+          placeholder={`Поиск по ${
+            filterType === 'teacher'
+              ? 'Преподавателю'
+              : filterType === 'dayOfWeek'
+              ? 'Дню недели'
+              : filterType === 'group'
+              ? 'Группе'
+              : filterType === 'subject'
+              ? 'Дисциплине'
+              : filterType === 'classroom'
+              ? 'Аудитории'
+              : 'Выбранному фильтру'
+          }...`}
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+          className="max-w-sm"
+        />
         <Button variant="outline" onClick={downloadPDF} className="ml-auto">
           <FileDown/>Скачать PDF
         </Button>
@@ -114,7 +132,7 @@ export default function ScheduleTable({ scheduleData }: ScheduleTableProps) {
             <TableRow key={index}>
               <TableCell className='border w-40'>{item.group}</TableCell>
               <TableCell className='border text-center'>{item.dayOfWeek}</TableCell>
-              <TableCell className='bordborder text-centerer'>{item.date}</TableCell>
+              <TableCell className='border text-center'>{item.date}</TableCell>
               <TableCell className='border text-center w-28'>{item.time}</TableCell>
               <TableCell className='border'>{item.subject}</TableCell>
               <TableCell className='border'>{item.lessonType}</TableCell>
@@ -127,4 +145,3 @@ export default function ScheduleTable({ scheduleData }: ScheduleTableProps) {
     </div>
   );
 }
-
