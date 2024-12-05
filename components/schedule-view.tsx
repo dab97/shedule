@@ -13,10 +13,24 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
-} from "@/components/ui/drawer"
-import { format, startOfWeek, addDays, parse, isWithinInterval } from "date-fns";
+} from "@/components/ui/drawer";
+import {
+  format,
+  startOfWeek,
+  addDays,
+  parse,
+  isWithinInterval,
+} from "date-fns";
 import { ru } from "date-fns/locale";
-import { CalendarIcon, MapPin, Clock } from 'lucide-react';
+import {
+  CalendarDays,
+  CalendarIcon,
+  MapPin,
+  Clock,
+  FileText,
+  User,
+  Users,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -32,6 +46,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { ScheduleItem } from "../types/schedule";
 
 const daysOfWeek = [
@@ -63,7 +78,9 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
   const [selectedGroup, setSelectedGroup] = useState<string>("all");
   const [selectedTeacher, setSelectedTeacher] = useState<string>("all");
   const [searchTerm, setSearchTerm] = useState<string>("");
-  const [selectedLesson, setSelectedLesson] = useState<ScheduleItem | null>(null);
+  const [selectedLesson, setSelectedLesson] = useState<ScheduleItem | null>(
+    null
+  );
 
   const getCurrentWeekDates = () => {
     const start = startOfWeek(date, { weekStartsOn: 1 });
@@ -99,8 +116,12 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
     });
   }, [scheduleData, selectedGroup, selectedTeacher, date]);
 
-  const uniqueGroups = Array.from(new Set(scheduleData.map((item) => item.group)));
-  const uniqueTeachers = Array.from(new Set(scheduleData.map((item) => item.teacher)));
+  const uniqueGroups = Array.from(
+    new Set(scheduleData.map((item) => item.group))
+  );
+  const uniqueTeachers = Array.from(
+    new Set(scheduleData.map((item) => item.teacher))
+  );
 
   return (
     <div className="container mx-auto p-4 space-y-6 overflow-x-auto">
@@ -155,7 +176,7 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
                   "w-full justify-between text-left font-normal",
                   !date && "text-muted-foreground"
                 )}
-              >                
+              >
                 {format(date, "dd.MM.yyyy")}
                 <CalendarIcon className="h-4 w-4" />
               </Button>
@@ -171,11 +192,13 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
               />
             </PopoverContent>
           </Popover>
-        </div>        
+        </div>
       </div>
 
       <h2 className="text-center text-xl font-bold mb-4">
-        Расписание на неделю: {format(getCurrentWeekDates().start, "dd.MM.yyyy")} - {format(getCurrentWeekDates().end, "dd.MM.yyyy")}
+        Расписание на неделю:{" "}
+        {format(getCurrentWeekDates().start, "dd.MM.yyyy")} -{" "}
+        {format(getCurrentWeekDates().end, "dd.MM.yyyy")}
       </h2>
 
       {/* Мобильная версия */}
@@ -186,7 +209,9 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
             filteredData.some(
               (item) =>
                 item.time === timeSlot &&
-                item.dayOfWeek.toLowerCase().includes(day.label.toLowerCase()) &&
+                item.dayOfWeek
+                  .toLowerCase()
+                  .includes(day.label.toLowerCase()) &&
                 isWithinInterval(parse(item.date, "dd.MM.yyyy", new Date()), {
                   start: getCurrentWeekDates().start,
                   end: getCurrentWeekDates().end,
@@ -208,11 +233,16 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
                 const lesson = filteredData.find(
                   (item) =>
                     item.time === timeSlot &&
-                    item.dayOfWeek.toLowerCase().includes(day.label.toLowerCase()) &&
-                    isWithinInterval(parse(item.date, "dd.MM.yyyy", new Date()), {
-                      start: getCurrentWeekDates().start,
-                      end: getCurrentWeekDates().end,
-                    })
+                    item.dayOfWeek
+                      .toLowerCase()
+                      .includes(day.label.toLowerCase()) &&
+                    isWithinInterval(
+                      parse(item.date, "dd.MM.yyyy", new Date()),
+                      {
+                        start: getCurrentWeekDates().start,
+                        end: getCurrentWeekDates().end,
+                      }
+                    )
                 );
 
                 return lesson ? (
@@ -223,23 +253,31 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
                         onClick={() => handleLessonClick(lesson)}
                       >
                         <div className="space-y-1 leading-relaxed">
-                          <div className="font-semibold text-sm">{lesson.subject}</div>
+                          <div className="font-semibold text-sm">
+                            {lesson.subject}
+                          </div>
                           <div className="text-xs text-muted-foreground">
                             {lesson.lessonType}
                           </div>
                         </div>
                         <div className="mt-4 space-y-1 flex-grow flex flex-col">
                           <div className="flex flex-row items-center justify-end space-x-2">
-                            <span className="text-xs text-right">{lesson.teacher}</span>
+                            <span className="text-xs text-right">
+                              {lesson.teacher}
+                            </span>
                           </div>
                           <div className="flex items-center justify-between space-x-2 mt-auto">
                             <div className="flex items-center justify-start space-x-2">
                               <Clock className="h-4 w-4" />
-                              <span className="text-xs text-left">{lesson.time}</span>
+                              <span className="text-xs text-left">
+                                {lesson.time}
+                              </span>
                             </div>
                             <div className="flex items-center justify-end space-x-2">
                               <MapPin className="h-4 w-4" />
-                              <span className="text-xs text-right">{lesson.classroom}</span>
+                              <span className="text-xs text-right">
+                                {lesson.classroom}
+                              </span>
                             </div>
                           </div>
                         </div>
@@ -247,27 +285,73 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
                     </DrawerTrigger>
                     <DrawerContent aria-describedby={`description-${lesson}`}>
                       <DrawerHeader className="pt-10">
-                        <DrawerTitle>{lesson.subject}</DrawerTitle>
+                        <DrawerTitle className="text-center text-xl font-semibold text-slate-800 mt-4">
+                          {lesson.subject}
+                        </DrawerTitle>
                       </DrawerHeader>
-                      <div id={`description-${lesson}`} className="px-4 pb-8 text-sm text-muted-foreground">
-                        <p>
-                          <strong>Тип занятия:</strong> {lesson.lessonType}
-                        </p>
-                        <p>
-                          <strong>Преподаватель:</strong> {lesson.teacher}
-                        </p>
-                        <p>
-                          <strong>Группа:</strong> {lesson.group}
-                        </p>
-                        <p>
-                          <strong>Аудитория:</strong> {lesson.classroom}
-                        </p>
-                        <p>
-                          <strong>Дата:</strong> {lesson.date}
-                        </p>
-                        <p>
-                          <strong>Время:</strong> {lesson.time}
-                        </p>
+                      <div id={`description-${lesson}`} className="px-4 pb-16">
+                        <div className="flex flex-col gap-0.5 divide-y divide-dashed divide-slate-300">
+                          {[
+                            {
+                              icon: (
+                                <FileText className="text-slate-600 w-5 h-5" />
+                              ),
+                              label: "Тип занятия:",
+                              value: lesson.lessonType,
+                            },
+                            {
+                              icon: <User className="text-slate-600 w-5 h-5" />,
+                              label: "Преподаватель:",
+                              value: lesson.teacher,
+                            },
+                            {
+                              icon: (
+                                <Users className="text-slate-600 w-5 h-5" />
+                              ),
+                              label: "Группа:",
+                              value: lesson.group,
+                            },
+                            {
+                              icon: (
+                                <MapPin className="text-slate-600 w-5 h-5" />
+                              ),
+                              label: "Аудитория:",
+                              value: lesson.classroom,
+                            },
+                            {
+                              icon: (
+                                <CalendarDays className="text-slate-600 w-5 h-5" />
+                              ),
+                              label: "Дата:",
+                              value: lesson.date,
+                            },
+                            {
+                              icon: (
+                                <Clock className="text-slate-600 w-5 h-5" />
+                              ),
+                              label: "Время:",
+                              value: lesson.time,
+                            },
+                          ].map(({ icon, label, value }, index) => (
+                            <div
+                              key={index}
+                              className="flex items-center justify-between py-2 first:pt-0 last:pb-0"
+                            >
+                              <div className="flex items-center gap-2">
+                                {icon}
+                                <span className="text-left text-slate-700">
+                                  {value}
+                                </span>
+                              </div>
+                              <Badge
+                                variant="outline"
+                                className="bg-slate-100 text-slate-600 px-3 py-1 rounded-lg"
+                              >
+                                {label}
+                              </Badge>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     </DrawerContent>
                   </Drawer>
@@ -277,8 +361,6 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
           );
         })}
       </div>
-
-
       {/* Десктопная версия */}
       <div className="hidden sm:block space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-[repeat(7,minmax(200px,1fr))] gap-4">
@@ -297,7 +379,10 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
         </div>
 
         {timeSlots.map((timeSlot) => (
-          <div key={timeSlot} className="grid grid-cols-1 md:grid-cols-[repeat(7,minmax(200px,1fr))] gap-4">
+          <div
+            key={timeSlot}
+            className="grid grid-cols-1 md:grid-cols-[repeat(7,minmax(200px,1fr))] gap-4"
+          >
             <div className="flex items-center justify-center border text-slate-500 dark:text-slate-50 bg-slate-100 dark:bg-gray-900 p-4 rounded-lg font-black text-sm sm:text-2xl">
               {timeSlot}
             </div>
@@ -306,7 +391,9 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
               const lesson = filteredData.find(
                 (item) =>
                   item.time === timeSlot &&
-                  item.dayOfWeek.toLowerCase().includes(day.label.toLowerCase()) &&
+                  item.dayOfWeek
+                    .toLowerCase()
+                    .includes(day.label.toLowerCase()) &&
                   isWithinInterval(parse(item.date, "dd.MM.yyyy", new Date()), {
                     start: getCurrentWeekDates().start,
                     end: getCurrentWeekDates().end,
@@ -343,34 +430,77 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
                       </div>
                     </div>
                   </DialogTrigger>
-                  <DialogContent>
+                  <DialogContent className="p-6 rounded-lg shadow-lg bg-slate-50 animate-fade-in">
                     <DialogHeader>
-                      <DialogTitle>{lesson.subject}</DialogTitle>
+                      <DialogTitle className="text-center text-xl font-semibold text-slate-800 mt-2">
+                        {lesson.subject}
+                      </DialogTitle>
                     </DialogHeader>
-                    <div>
-                      <p>
-                        <strong>Тип занятия:</strong> {lesson.lessonType}
-                      </p>
-                      <p>
-                        <strong>Преподаватель:</strong> {lesson.teacher}
-                      </p>
-                      <p>
-                        <strong>Группа:</strong> {lesson.group}
-                      </p>
-                      <p>
-                        <strong>Аудитория:</strong> {lesson.classroom}
-                      </p>
-                      <p>
-                        <strong>Дата:</strong> {lesson.date}
-                      </p>
-                      <p>
-                        <strong>Время:</strong> {lesson.time}
-                      </p>
+                    <div className="flex flex-col gap-4 items-center mt-4">
+                      <div className="w-full max-w-lg rounded-md px-5 py-3 shadow-sm divide-y divide-dashed">
+                        {[
+                          {
+                            icon: (
+                              <FileText className="text-slate-600 w-5 h-5" />
+                            ),
+                            label: "Тип занятия:",
+                            value: lesson.lessonType,
+                          },
+                          {
+                            icon: <User className="text-slate-600 w-5 h-5" />,
+                            label: "Преподаватель:",
+                            value: lesson.teacher,
+                          },
+                          {
+                            icon: <Users className="text-slate-600 w-5 h-5" />,
+                            label: "Группа:",
+                            value: lesson.group,
+                          },
+                          {
+                            icon: <MapPin className="text-slate-600 w-5 h-5" />,
+                            label: "Аудитория:",
+                            value: lesson.classroom,
+                          },
+                          {
+                            icon: (
+                              <CalendarDays className="text-slate-600 w-5 h-5" />
+                            ),
+                            label: "Дата:",
+                            value: lesson.date,
+                          },
+                          {
+                            icon: <Clock className="text-slate-600 w-5 h-5" />,
+                            label: "Время:",
+                            value: lesson.time,
+                          },
+                        ].map(({ icon, label, value }, index) => (
+                          <div
+                            key={index}
+                            className="flex items-center justify-between py-2 first:pt-0 last:pb-0"
+                          >
+                            <div className="flex items-center gap-2">
+                              {icon}
+                              <span className="text-left text-slate-700">
+                                {value}
+                              </span>
+                            </div>
+                            <Badge
+                              variant="outline"
+                              className="bg-slate-100 text-slate-600 px-3 py-1 rounded-lg"
+                            >
+                              {label}
+                            </Badge>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </DialogContent>
                 </Dialog>
               ) : (
-                <div key={day.id} className="flex items-center justify-center p-4 border text-inherit bg-slate-50 dark:bg-gray-950 rounded-lg border-dashed">
+                <div
+                  key={day.id}
+                  className="flex items-center justify-center p-4 border text-inherit bg-slate-50 dark:bg-gray-950 rounded-lg border-dashed"
+                >
                   Нет занятий
                 </div>
               );
