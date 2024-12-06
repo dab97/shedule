@@ -289,7 +289,7 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
                           {lesson.subject}
                         </DrawerTitle>
                       </DrawerHeader>
-                      <div id={`description-${lesson}`} className="px-4 pb-8">
+                      <div id={`description-${lesson}`} className="px-4 pb-4">
                         <div className="flex flex-col gap-0.5 divide-y divide-dashed">
                           {[
                             {
