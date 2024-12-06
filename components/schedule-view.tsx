@@ -256,7 +256,7 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
                           <div className="font-semibold text-sm">
                             {lesson.subject}
                           </div>
-                          <div className="text-xs text-muted-foreground">
+                          <div className="text-xs">
                             {lesson.lessonType}
                           </div>
                         </div>
@@ -285,49 +285,49 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
                     </DrawerTrigger>
                     <DrawerContent aria-describedby={`description-${lesson}`}>
                       <DrawerHeader className="pt-10">
-                        <DrawerTitle className="text-center text-xl font-semibold text-slate-800 mt-4">
+                        <DrawerTitle className="text-center text-xl font-semibold mt-4">
                           {lesson.subject}
                         </DrawerTitle>
                       </DrawerHeader>
                       <div id={`description-${lesson}`} className="px-4 pb-16">
-                        <div className="flex flex-col gap-0.5 divide-y divide-dashed divide-slate-300">
+                        <div className="flex flex-col gap-0.5 divide-y divide-dashed">
                           {[
                             {
                               icon: (
-                                <FileText className="text-slate-600 w-5 h-5" />
+                                <FileText className="w-5 h-5" />
                               ),
                               label: "Тип занятия:",
                               value: lesson.lessonType,
                             },
                             {
-                              icon: <User className="text-slate-600 w-5 h-5" />,
+                              icon: <User className="w-5 h-5" />,
                               label: "Преподаватель:",
                               value: lesson.teacher,
                             },
                             {
                               icon: (
-                                <Users className="text-slate-600 w-5 h-5" />
+                                <Users className="w-5 h-5" />
                               ),
                               label: "Группа:",
                               value: lesson.group,
                             },
                             {
                               icon: (
-                                <MapPin className="text-slate-600 w-5 h-5" />
+                                <MapPin className="w-5 h-5" />
                               ),
                               label: "Аудитория:",
                               value: lesson.classroom,
                             },
                             {
                               icon: (
-                                <CalendarDays className="text-slate-600 w-5 h-5" />
+                                <CalendarDays className="w-5 h-5" />
                               ),
                               label: "Дата:",
                               value: lesson.date,
                             },
                             {
                               icon: (
-                                <Clock className="text-slate-600 w-5 h-5" />
+                                <Clock className="w-5 h-5" />
                               ),
                               label: "Время:",
                               value: lesson.time,
@@ -339,13 +339,13 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
                             >
                               <div className="flex items-center gap-2">
                                 {icon}
-                                <span className="text-left text-slate-700">
+                                <span className="text-left">
                                   {value}
                                 </span>
                               </div>
                               <Badge
                                 variant="outline"
-                                className="bg-slate-100 text-slate-600 px-3 py-1 rounded-lg"
+                                className="px-3 py-1 rounded-lg"
                               >
                                 {label}
                               </Badge>
@@ -411,7 +411,7 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
                         <div className="font-semibold text-sm">
                           {lesson.subject}
                         </div>
-                        <div className="text-xs text-muted-foreground">
+                        <div className="text-xs">
                           {lesson.lessonType}
                         </div>
                       </div>
@@ -422,7 +422,7 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
                           </span>
                         </div>
                         <div className="flex items-center justify-end space-x-2">
-                          <MapPin className="h-4 w-4 text-muted-foreground" />
+                          <MapPin className="h-4 w-4" />
                           <span className="text-xs text-right">
                             ауд. {lesson.classroom}
                           </span>
@@ -430,46 +430,46 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
                       </div>
                     </div>
                   </DialogTrigger>
-                  <DialogContent className="p-6 rounded-lg shadow-lg bg-slate-50 animate-fade-in">
+                  <DialogContent className="p-6 rounded-lg shadow-lg animate-fade-in">
                     <DialogHeader>
-                      <DialogTitle className="text-center text-xl font-semibold text-slate-800 mt-2">
+                      <DialogTitle className="text-center text-xl font-semibold mt-6">
                         {lesson.subject}
                       </DialogTitle>
                     </DialogHeader>
-                    <div className="flex flex-col gap-4 items-center mt-4">
+                    <div className="flex flex-col gap-4 items-center">
                       <div className="w-full max-w-lg rounded-md px-5 py-3 shadow-sm divide-y divide-dashed">
                         {[
                           {
                             icon: (
-                              <FileText className="text-slate-600 w-5 h-5" />
+                              <FileText className="w-5 h-5" />
                             ),
                             label: "Тип занятия:",
                             value: lesson.lessonType,
                           },
                           {
-                            icon: <User className="text-slate-600 w-5 h-5" />,
+                            icon: <User className="w-5 h-5" />,
                             label: "Преподаватель:",
                             value: lesson.teacher,
                           },
                           {
-                            icon: <Users className="text-slate-600 w-5 h-5" />,
+                            icon: <Users className="w-5 h-5" />,
                             label: "Группа:",
                             value: lesson.group,
                           },
                           {
-                            icon: <MapPin className="text-slate-600 w-5 h-5" />,
+                            icon: <MapPin className="w-5 h-5" />,
                             label: "Аудитория:",
                             value: lesson.classroom,
                           },
                           {
                             icon: (
-                              <CalendarDays className="text-slate-600 w-5 h-5" />
+                              <CalendarDays className="w-5 h-5" />
                             ),
                             label: "Дата:",
                             value: lesson.date,
                           },
                           {
-                            icon: <Clock className="text-slate-600 w-5 h-5" />,
+                            icon: <Clock className="w-5 h-5" />,
                             label: "Время:",
                             value: lesson.time,
                           },
@@ -480,13 +480,13 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
                           >
                             <div className="flex items-center gap-2">
                               {icon}
-                              <span className="text-left text-slate-700">
+                              <span className="text-left">
                                 {value}
                               </span>
                             </div>
                             <Badge
                               variant="outline"
-                              className="bg-slate-100 text-slate-600 px-3 py-1 rounded-lg"
+                              className="px-3 py-1 rounded-full"
                             >
                               {label}
                             </Badge>
