@@ -296,40 +296,40 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
                               icon: (
                                 <FileText className="w-5 h-5" />
                               ),
-                              label: "Тип занятия:",
+                              label: "Тип занятия",
                               value: lesson.lessonType,
                             },
                             {
                               icon: <User className="w-5 h-5" />,
-                              label: "Преподаватель:",
+                              label: "Преподаватель",
                               value: lesson.teacher,
                             },
                             {
                               icon: (
                                 <Users className="w-5 h-5" />
                               ),
-                              label: "Группа:",
+                              label: "Группа",
                               value: lesson.group,
                             },
                             {
                               icon: (
                                 <MapPin className="w-5 h-5" />
                               ),
-                              label: "Аудитория:",
+                              label: "Аудитория",
                               value: lesson.classroom,
                             },
                             {
                               icon: (
                                 <CalendarDays className="w-5 h-5" />
                               ),
-                              label: "Дата:",
+                              label: "Дата",
                               value: lesson.date,
                             },
                             {
                               icon: (
                                 <Clock className="w-5 h-5" />
                               ),
-                              label: "Время:",
+                              label: "Время",
                               value: lesson.time,
                             },
                           ].map(({ icon, label, value }, index) => (
