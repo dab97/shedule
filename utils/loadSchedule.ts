@@ -9,7 +9,7 @@ export type ScheduleItem = {
   lessonType: string;
   teacher: string;
   classroom: string;
-}
+};
 
 export const loadSchedule = async (): Promise<ScheduleItem[]> => {
   try {
@@ -45,7 +45,7 @@ export const loadSchedule = async (): Promise<ScheduleItem[]> => {
 
     console.log("Данные получены из Google Sheets");
 
-    const rows = response.data.values;
+    const rows = response.data.values || [];
 
     if (!rows || rows.length === 0) {
       console.log("Данные не найдены в таблице");
@@ -54,8 +54,7 @@ export const loadSchedule = async (): Promise<ScheduleItem[]> => {
 
     console.log(`Получено ${rows.length} строк данных`);
 
-    // Преобразуйте строки в объекты ScheduleItem
-    const schedule: ScheduleItem[] = rows.map((row, index) => ({
+    return rows.map((row, index) => ({
       id: `${index + 1}`,
       group: row[0] || "",
       dayOfWeek: row[1] || "",
@@ -66,12 +65,8 @@ export const loadSchedule = async (): Promise<ScheduleItem[]> => {
       teacher: row[6] || "",
       classroom: row[7] || "",
     }));
-
-    console.log("Данные успешно преобразованы в объекты ScheduleItem");
-
-    return schedule;
   } catch (error) {
-    console.error("Ошибка загрузки расписания:", error);
+    console.error("Ошибка загрузки данных из Google Sheets:", error);
     throw error;
   }
-}
+};
