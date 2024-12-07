@@ -437,7 +437,7 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
                       </DialogTitle>
                     </DialogHeader>
                     <div className="flex flex-col gap-4 items-center">
-                      <div className="w-full max-w-lg rounded-md px-5 py-3 shadow-sm divide-y divide-dashed">
+                      <div className="w-full max-w-lg rounded-md px-5 py-3 divide-y divide-dashed">
                         {[
                           {
                             icon: (

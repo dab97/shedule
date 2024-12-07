@@ -1,4 +1,4 @@
-import Head from "next/head";
+import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ThemeProvider } from "next-themes";
@@ -28,6 +28,29 @@ const evolventaBold = localFont({
   weight: "700",
 });
 
+export const metadata: Metadata = {
+  title: "Расписание занятий на 29.11-14.12",
+  description: "Актуальное расписание занятий на 29.11.2024 - 14.12.2024",
+  icons: {
+    icon: '/favicon.png',
+    // apple: '/apple-icon.png',
+  },
+  // viewport: "width=device-width, initial-scale=1, maximum-scale=1",
+  // themeColor: "system",
+  openGraph: {
+    title: "Расписание занятий на 29.11-14.12",
+    description: "Актуальное расписание занятий на 29.11.2024 - 14.12.2024",    
+    type: 'website',
+    images: [
+      {
+        url: 'https://shedule-rgsu.vercel.app/og-image.png',
+        width: 800,
+        height: 600,
+      },
+    ],    
+  },
+};
+
 // RootLayout компонент
 export default function RootLayout({
   children,
@@ -36,18 +59,6 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
-      <Head>
-        <title>Расписание занятий на 29.11-14.12</title>
-        <meta name="description" content="Актуальное расписание занятий на 29.11.2024 - 14.12.2024" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta property="og:title" content="Расписание занятий на 29.11-14.12" />
-        <meta
-          property="og:description"
-          content="Актуальное расписание занятий на 29.11.2024 - 14.12.2024"
-        />
-        <meta name="theme-color" content="#ffffff" />
-        <link rel="icon" type="image/png" href="/favicon.png" />
-      </Head>
       <body className="antialiased">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <ThemeSwitcher />

@@ -151,40 +151,42 @@ export default function ScheduleTable({ scheduleData }: ScheduleTableProps) {
           Скачать PDF
         </Button>
       </div>
-      <Table className="border">
-        <TableHeader className="border text-center bg-slate-100 dark:bg-gray-900">
-          <TableRow className="border text-center">
-            <TableHead className="border text-center">Группа</TableHead>
-            <TableHead className="border text-center">День недели</TableHead>
-            <TableHead className="border text-center">Дата</TableHead>
-            <TableHead className="border text-center">Время</TableHead>
-            <TableHead className="border text-center">Дисциплина</TableHead>
-            <TableHead className="border text-center">Вид занятия</TableHead>
-            <TableHead className="border text-center">Преподаватель</TableHead>
-            <TableHead className="border text-center">Аудитория</TableHead>
+      <div className="rounded-lg border overflow-hidden">
+      <Table className="">
+        <TableHeader className="text-center bg-muted dark:bg-neutral-900">
+          <TableRow className="text-center">
+            <TableHead className="border-r text-center">Группа</TableHead>
+            <TableHead className="border-r text-center">День недели</TableHead>
+            <TableHead className="border-r text-center">Дата</TableHead>
+            <TableHead className="border-r text-center">Время</TableHead>
+            <TableHead className="border-r text-center">Дисциплина</TableHead>
+            <TableHead className="border-r text-center">Вид занятия</TableHead>
+            <TableHead className="border-r text-center">Преподаватель</TableHead>
+            <TableHead className=" text-center">Аудитория</TableHead>
           </TableRow>
         </TableHeader>
-        <TableBody className="border">
+        <TableBody className="">
           {filteredData.map((item, index) => (
             <TableRow key={index}>
-              <TableCell className="border w-40">{item.group}</TableCell>
-              <TableCell className="border text-center">
+              <TableCell className="border-r w-40">{item.group}</TableCell>
+              <TableCell className="border-r text-center">
                 {item.dayOfWeek}
               </TableCell>
-              <TableCell className="border text-center">{item.date}</TableCell>
-              <TableCell className="border text-center w-28">
+              <TableCell className="border-r text-center">{item.date}</TableCell>
+              <TableCell className="border-r text-center w-28">
                 {item.time}
               </TableCell>
-              <TableCell className="border">{item.subject}</TableCell>
-              <TableCell className="border">{item.lessonType}</TableCell>
-              <TableCell className="border">{item.teacher}</TableCell>
-              <TableCell className="border text-center">
+              <TableCell className="border-r">{item.subject}</TableCell>
+              <TableCell className="border-r">{item.lessonType}</TableCell>
+              <TableCell className="border-r">{item.teacher}</TableCell>
+              <TableCell className="text-center">
                 {item.classroom}
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
+      </div>
     </div>
   );
 }
