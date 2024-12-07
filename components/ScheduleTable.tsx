@@ -139,7 +139,7 @@ export default function ScheduleTable({ scheduleData }: ScheduleTableProps) {
             }...`}
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            className="pl-8"
+            className="text-sm pl-8 py-2"
           />
         </div>
         <Button
@@ -152,40 +152,46 @@ export default function ScheduleTable({ scheduleData }: ScheduleTableProps) {
         </Button>
       </div>
       <div className="rounded-lg border overflow-hidden">
-      <Table className="">
-        <TableHeader className="text-center bg-muted dark:bg-neutral-900">
-          <TableRow className="text-center">
-            <TableHead className="border-r text-center">Группа</TableHead>
-            <TableHead className="border-r text-center">День недели</TableHead>
-            <TableHead className="border-r text-center">Дата</TableHead>
-            <TableHead className="border-r text-center">Время</TableHead>
-            <TableHead className="border-r text-center">Дисциплина</TableHead>
-            <TableHead className="border-r text-center">Вид занятия</TableHead>
-            <TableHead className="border-r text-center">Преподаватель</TableHead>
-            <TableHead className=" text-center">Аудитория</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody className="">
-          {filteredData.map((item, index) => (
-            <TableRow key={index}>
-              <TableCell className="border-r w-40">{item.group}</TableCell>
-              <TableCell className="border-r text-center">
-                {item.dayOfWeek}
-              </TableCell>
-              <TableCell className="border-r text-center">{item.date}</TableCell>
-              <TableCell className="border-r text-center w-28">
-                {item.time}
-              </TableCell>
-              <TableCell className="border-r">{item.subject}</TableCell>
-              <TableCell className="border-r">{item.lessonType}</TableCell>
-              <TableCell className="border-r">{item.teacher}</TableCell>
-              <TableCell className="text-center">
-                {item.classroom}
-              </TableCell>
+        <Table className="">
+          <TableHeader className="text-center bg-muted dark:bg-neutral-900">
+            <TableRow className="text-center">
+              <TableHead className="border-r text-center">Группа</TableHead>
+              <TableHead className="border-r text-center">
+                День недели
+              </TableHead>
+              <TableHead className="border-r text-center">Дата</TableHead>
+              <TableHead className="border-r text-center">Время</TableHead>
+              <TableHead className="border-r text-center">Дисциплина</TableHead>
+              <TableHead className="border-r text-center">
+                Вид занятия
+              </TableHead>
+              <TableHead className="border-r text-center">
+                Преподаватель
+              </TableHead>
+              <TableHead className=" text-center">Аудитория</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody className="">
+            {filteredData.map((item, index) => (
+              <TableRow key={index}>
+                <TableCell className="border-r w-40">{item.group}</TableCell>
+                <TableCell className="border-r text-center">
+                  {item.dayOfWeek}
+                </TableCell>
+                <TableCell className="border-r text-center">
+                  {item.date}
+                </TableCell>
+                <TableCell className="border-r text-center w-28">
+                  {item.time}
+                </TableCell>
+                <TableCell className="border-r">{item.subject}</TableCell>
+                <TableCell className="border-r">{item.lessonType}</TableCell>
+                <TableCell className="border-r">{item.teacher}</TableCell>
+                <TableCell className="text-center">{item.classroom}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </div>
     </div>
   );

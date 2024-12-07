@@ -47,7 +47,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { ScheduleItem } from "../types/schedule";
+// import { ScheduleItem } from '@/utils/loadSchedule';
+import { ScheduleItem } from '@/types/schedule'
+
 
 const daysOfWeek = [
   { id: "monday", label: "Пн" },
@@ -69,9 +71,9 @@ const timeSlots = [
   "20.30 - 22.00",
 ];
 
-interface ScheduleViewProps {
-  scheduleData: ScheduleItem[];
-}
+type ScheduleViewProps = {
+  scheduleData: ScheduleItem[]; // Убедитесь, что тип schedule здесь правильный
+};
 
 export function ScheduleView({ scheduleData }: ScheduleViewProps) {
   const [date, setDate] = useState<Date>(new Date());
