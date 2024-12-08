@@ -31,16 +31,6 @@ interface ScheduleTableProps {
 export default function ScheduleTable({ scheduleData }: ScheduleTableProps) {
   const [filter, setFilter] = useState("");
   const [filterType, setFilterType] = useState("teacher");
-  //const [filterOptions, setFilterOptions] = useState<{ value: string; label: string }[]>([]);
-
-  //useEffect(() => {
-  //  if (scheduleData && scheduleData.length > 0) {
-  //    const options = Array.from(new Set(scheduleData.map(item => item[filterType as keyof ScheduleItem]))).filter(Boolean);
-  //    setFilterOptions(options.map(option => ({ value: String(option), label: String(option) })));
-  //  } else {
-  //    setFilterOptions([]);
-  //  }
-  //}, [scheduleData, filterType]);
 
   const filteredData = useMemo(() => {
     if (!filter || !scheduleData) return scheduleData || [];
@@ -64,6 +54,7 @@ export default function ScheduleTable({ scheduleData }: ScheduleTableProps) {
 
     // @ts-ignore
     doc.autoTable({
+      margin: 10,      
       head: [
         [
           "Группа",
@@ -75,7 +66,7 @@ export default function ScheduleTable({ scheduleData }: ScheduleTableProps) {
           "Преподаватель",
           "Аудитория",
         ],
-      ],
+      ],      
       body: filteredData.map((item) => [
         item.group,
         item.dayOfWeek,
@@ -86,13 +77,18 @@ export default function ScheduleTable({ scheduleData }: ScheduleTableProps) {
         item.teacher,
         item.classroom,
       ]),
-      styles: { font: "Roboto", fontSize: 10 },
+      rowPageBreak: 'auto',
+      styles: { font: "Roboto", fontSize: 9,},
       headStyles: {
         fillColor: [200, 200, 200],
-        textColor: 0,
+        textColor: 0,        
         fontStyle: "bold",
         valign: "middle",
         halign: "center",
+      },
+      bodyStyles: {
+        valign: 'top',
+        halign: "auto",
       },
     });
 
