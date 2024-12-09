@@ -48,8 +48,18 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 // import { ScheduleItem } from '@/utils/loadSchedule';
-import { ScheduleItem } from '@/types/schedule'
+import { ScheduleItem } from "@/types/schedule";
 
+function getDeclension(number: number, forms: string[]): string {
+  const cases = [2, 0, 1, 1, 1, 2];
+  return forms[
+    number % 100 > 4 && number % 100 < 20
+      ? 2
+      : cases[number % 10 < 5 ? number % 10 : 5]
+  ];
+}
+
+export { getDeclension };
 
 const daysOfWeek = [
   { id: "monday", label: "Пн" },
@@ -72,7 +82,37 @@ const timeSlots = [
 ];
 
 type ScheduleViewProps = {
-  scheduleData: ScheduleItem[]; // Убедитесь, что тип schedule здесь правильный
+  scheduleData: ScheduleItem[];
+};
+
+// В карточке занятия (как для мобильной, так и для десктопной версии)
+const LessonCard = ({ lessons }: { lessons: ScheduleItem[] }) => {
+  return (
+    <div className="p-3 border rounded-lg flex flex-col justify-between h-full cursor-pointer">
+      {lessons.map((lesson, index) => (
+        <div
+          key={index}
+          className={cn("flex flex-col", index > 0 && "mt-2 pt-2 border-t")}
+        >
+          <div className="space-y-1 leading-relaxed">
+            <div className="font-semibold text-sm">{lesson.subject}</div>
+            <div className="text-xs">{lesson.lessonType}</div>
+          </div>
+          <div className="mt-2 space-y-1">
+            <div className="flex items-center justify-end space-x-2">
+              <span className="text-xs text-right">{lesson.teacher}</span>
+            </div>
+            <div className="flex items-center justify-end space-x-2">
+              <MapPin className="h-4 w-4" />
+              <span className="text-xs text-right">
+                ауд. {lesson.classroom}
+              </span>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
 };
 
 export function ScheduleView({ scheduleData }: ScheduleViewProps) {
@@ -232,7 +272,7 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
                 {day.label} ({day.date})
               </div>
               {timeSlots.map((timeSlot) => {
-                const lesson = filteredData.find(
+                const lessons = filteredData.filter(
                   (item) =>
                     item.time === timeSlot &&
                     item.dayOfWeek
@@ -247,113 +287,120 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
                     )
                 );
 
-                return lesson ? (
-                  <Drawer>
+                return lessons.length > 0 ? (
+                  <Drawer key={`${day.label}-${day.date}-${timeSlot}`}>
                     <DrawerTrigger asChild>
                       <div
                         className="p-3 border rounded-lg flex flex-col justify-between cursor-pointer"
-                        onClick={() => handleLessonClick(lesson)}
+                        onClick={() => handleLessonClick(lessons[0])}
                       >
                         <div className="space-y-1 leading-relaxed">
                           <div className="font-semibold text-sm">
-                            {lesson.subject}
+                            {lessons[0].subject}
+                            {lessons.length > 1 && (
+                              <span className="text-xs font-normal ml-1 text-primary">
+                                (+{lessons.length - 1}{" "}
+                                {getDeclension(lessons.length - 1, [
+                                  "занятие",
+                                  "занятия",
+                                  "занятий",
+                                ])}
+                                )
+                              </span>
+                            )}
                           </div>
-                          <div className="text-xs">
-                            {lesson.lessonType}
-                          </div>
+                          <div className="text-xs">{lessons[0].lessonType}</div>
                         </div>
                         <div className="mt-4 space-y-1 flex-grow flex flex-col">
                           <div className="flex flex-row items-center justify-end space-x-2">
                             <span className="text-xs text-right">
-                              {lesson.teacher}
+                              {lessons[0].teacher}
                             </span>
                           </div>
                           <div className="flex items-center justify-between space-x-2 mt-auto">
                             <div className="flex items-center justify-start space-x-2">
                               <Clock className="h-4 w-4" />
                               <span className="text-xs text-left">
-                                {lesson.time}
+                                {lessons[0].time}
                               </span>
                             </div>
                             <div className="flex items-center justify-end space-x-2">
                               <MapPin className="h-4 w-4" />
                               <span className="text-xs text-right">
-                                {lesson.classroom}
+                                {lessons[0].classroom}
                               </span>
                             </div>
                           </div>
                         </div>
                       </div>
                     </DrawerTrigger>
-                    <DrawerContent aria-describedby={`description-${lesson}`}>
-                      <DrawerHeader className="pt-10">
-                        <DrawerTitle className="text-center text-xl font-semibold mt-4">
-                          {lesson.subject}
-                        </DrawerTitle>
-                      </DrawerHeader>
-                      <div id={`description-${lesson}`} className="px-4 pb-4">
-                        <div className="flex flex-col gap-0.5 divide-y divide-dashed">
-                          {[
-                            {
-                              icon: (
-                                <FileText className="w-5 h-5" />
-                              ),
-                              label: "Тип занятия",
-                              value: lesson.lessonType,
-                            },
-                            {
-                              icon: <User className="w-5 h-5" />,
-                              label: "Преподаватель",
-                              value: lesson.teacher,
-                            },
-                            {
-                              icon: (
-                                <Users className="w-5 h-5" />
-                              ),
-                              label: "Группа",
-                              value: lesson.group,
-                            },
-                            {
-                              icon: (
-                                <MapPin className="w-5 h-5" />
-                              ),
-                              label: "Аудитория",
-                              value: lesson.classroom,
-                            },
-                            {
-                              icon: (
-                                <CalendarDays className="w-5 h-5" />
-                              ),
-                              label: "Дата",
-                              value: lesson.date,
-                            },
-                            {
-                              icon: (
-                                <Clock className="w-5 h-5" />
-                              ),
-                              label: "Время",
-                              value: lesson.time,
-                            },
-                          ].map(({ icon, label, value }, index) => (
-                            <div
-                              key={index}
-                              className="flex items-center justify-between py-2 first:pt-0 last:pb-0"
-                            >
-                              <div className="flex items-center gap-2">
-                                {icon}
-                                <span className="text-left">
-                                  {value}
-                                </span>
+                    <DrawerContent>
+                      <div className="overflow-y-auto max-h-[calc(95vh-5rem)] px-4 pb-4">
+                        <DrawerHeader className="pt-10">
+                          <DrawerTitle className="text-center font-semibold text-base mt-4">
+                            {lessons[0].subject}
+                          </DrawerTitle>
+                        </DrawerHeader>
+                        {lessons.map((lesson, lessonIndex) => (
+                          <div
+                            key={`${lesson.date}-${lesson.time}-${lesson.subject}-${lessonIndex}`}
+                            className="flex flex-col gap-0.5 divide-y divide-dashed"
+                          >
+                            {lessonIndex > 0 && (
+                              <div className="text-center font-semibold my-4">
+                                {lesson.subject}
                               </div>
-                              <Badge
-                                variant="outline"
-                                className="px-3 py-1 rounded-lg"
+                            )}
+                            {[
+                              {
+                                icon: <FileText className="w-5 h-5" />,
+                                label: "Тип занятия",
+                                value: lesson.lessonType,
+                              },
+                              {
+                                icon: <User className="w-5 h-5" />,
+                                label: "Преподаватель",
+                                value: lesson.teacher,
+                              },
+                              {
+                                icon: <Users className="w-5 h-5" />,
+                                label: "Группа",
+                                value: lesson.group,
+                              },
+                              {
+                                icon: <MapPin className="w-5 h-5" />,
+                                label: "Аудитория",
+                                value: lesson.classroom,
+                              },
+                              {
+                                icon: <CalendarDays className="w-5 h-5" />,
+                                label: "Дата",
+                                value: lesson.date,
+                              },
+                              {
+                                icon: <Clock className="w-5 h-5" />,
+                                label: "Время",
+                                value: lesson.time,
+                              },
+                            ].map(({ icon, label, value }, index) => (
+                              <div
+                                key={index}
+                                className="flex items-center justify-between py-2 first:pt-0 last:pb-0"
                               >
-                                {label}
-                              </Badge>
-                            </div>
-                          ))}
-                        </div>
+                                <div className="flex items-center gap-2">
+                                  {icon}
+                                  <span className="text-left">{value}</span>
+                                </div>
+                                <Badge
+                                  variant="outline"
+                                  className="px-3 py-1 rounded-lg"
+                                >
+                                  {label}
+                                </Badge>
+                              </div>
+                            ))}
+                          </div>
+                        ))}
                       </div>
                     </DrawerContent>
                   </Drawer>
@@ -390,7 +437,7 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
             </div>
 
             {daysOfWeek.map((day, index) => {
-              const lesson = filteredData.find(
+              const lessons = filteredData.filter(
                 (item) =>
                   item.time === timeSlot &&
                   item.dayOfWeek
@@ -402,105 +449,118 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
                   })
               );
 
-              return lesson ? (
-                <Dialog>
+              return lessons.length > 0 ? (
+                <Dialog key={`${day.id}-${timeSlot}`}>
                   <DialogTrigger asChild>
                     <div
                       className="p-3 border rounded-lg flex flex-col justify-between h-full cursor-pointer"
-                      onClick={() => handleLessonClick(lesson)}
+                      onClick={() => handleLessonClick(lessons[0])}
                     >
                       <div className="space-y-1 leading-relaxed">
                         <div className="font-semibold text-sm">
-                          {lesson.subject}
+                          {lessons[0].subject}
+                          {lessons.length > 1 && (
+                            <span className="text-xs font-normal ml-1 text-primary">
+                              (+{lessons.length - 1}{" "}
+                              {getDeclension(lessons.length - 1, [
+                                "занятие",
+                                "занятия",
+                                "занятий",
+                              ])}
+                              )
+                            </span>
+                          )}
                         </div>
-                        <div className="text-xs">
-                          {lesson.lessonType}
-                        </div>
+                        <div className="text-xs">{lessons[0].lessonType}</div>
                       </div>
                       <div className="mt-4 space-y-1">
                         <div className="flex items-center justify-end space-x-2">
                           <span className="text-xs text-right">
-                            {lesson.teacher}
+                            {lessons[0].teacher}
                           </span>
                         </div>
                         <div className="flex items-center justify-end space-x-2">
                           <MapPin className="h-4 w-4" />
                           <span className="text-xs text-right">
-                            ауд. {lesson.classroom}
+                            ауд. {lessons[0].classroom}
                           </span>
                         </div>
                       </div>
                     </div>
                   </DialogTrigger>
                   <DialogContent className="p-6 rounded-lg shadow-lg animate-fade-in">
-                    <DialogHeader>
-                      <DialogTitle className="text-center text-xl font-semibold mt-6">
-                        {lesson.subject}
-                      </DialogTitle>
-                    </DialogHeader>
-                    <div className="flex flex-col gap-4 items-center">
-                      <div className="w-full max-w-lg rounded-md px-5 py-3 divide-y divide-dashed">
-                        {[
-                          {
-                            icon: (
-                              <FileText className="w-5 h-5" />
-                            ),
-                            label: "Тип занятия",
-                            value: lesson.lessonType,
-                          },
-                          {
-                            icon: <User className="w-5 h-5" />,
-                            label: "Преподаватель",
-                            value: lesson.teacher,
-                          },
-                          {
-                            icon: <Users className="w-5 h-5" />,
-                            label: "Группа",
-                            value: lesson.group,
-                          },
-                          {
-                            icon: <MapPin className="w-5 h-5" />,
-                            label: "Аудитория",
-                            value: lesson.classroom,
-                          },
-                          {
-                            icon: (
-                              <CalendarDays className="w-5 h-5" />
-                            ),
-                            label: "Дата",
-                            value: lesson.date,
-                          },
-                          {
-                            icon: <Clock className="w-5 h-5" />,
-                            label: "Время",
-                            value: lesson.time,
-                          },
-                        ].map(({ icon, label, value }, index) => (
-                          <div
-                            key={index}
-                            className="flex items-center justify-between py-2 first:pt-0 last:pb-0"
-                          >
-                            <div className="flex items-center gap-2">
-                              {icon}
-                              <span className="text-left">
-                                {value}
-                              </span>
+                    <div className="overflow-y-auto max-h-[calc(95vh-5rem)] flex flex-col gap-4 items-center">
+                      <DialogHeader>
+                        <DialogTitle className="text-center text-base font-semibold mt-6">
+                          {lessons[0].subject}
+                        </DialogTitle>
+                      </DialogHeader>
+                      {lessons.map((lesson, lessonIndex) => (
+                        <div
+                          key={`${lesson.date}-${lesson.time}-${lesson.subject}-${lessonIndex}`}
+                          className="w-full max-w-lg rounded-md px-5 py-3 divide-y divide-dashed"
+                        >
+                          {lessonIndex > 0 && (
+                            <div className="text-center font-semibold my-4">
+                              {lesson.subject}
                             </div>
-                            <Badge
-                              variant="outline"
-                              className="px-3 py-1 rounded-full"
+                          )}
+                          {[
+                            {
+                              icon: <FileText className="w-5 h-5" />,
+                              label: "Тип занятия",
+                              value: lesson.lessonType,
+                            },
+                            {
+                              icon: <User className="w-5 h-5" />,
+                              label: "Преподаватель",
+                              value: lesson.teacher,
+                            },
+                            {
+                              icon: <Users className="w-5 h-5" />,
+                              label: "Группа",
+                              value: lesson.group,
+                            },
+                            {
+                              icon: <MapPin className="w-5 h-5" />,
+                              label: "Аудитория",
+                              value: lesson.classroom,
+                            },
+                            {
+                              icon: <CalendarDays className="w-5 h-5" />,
+                              label: "Дата",
+                              value: lesson.date,
+                            },
+                            {
+                              icon: <Clock className="w-5 h-5" />,
+                              label: "Время",
+                              value: lesson.time,
+                            },
+                          ].map(({ icon, label, value }, index) => (
+                            <div
+                              key={index}
+                              className="flex items-center justify-between py-2 first:pt-0 last:pb-0"
                             >
-                              {label}
-                            </Badge>
-                          </div>
-                        ))}
-                      </div>
+                              <div className="flex items-center gap-2">
+                                {icon}
+                                <span className="text-left">{value}</span>
+                              </div>
+                              <Badge
+                                variant="outline"
+                                className="px-3 py-1 rounded-full"
+                              >
+                                {label}
+                              </Badge>
+                            </div>
+                          ))}
+                        </div>
+                      ))}
                     </div>
                   </DialogContent>
                 </Dialog>
               ) : (
                 <div
-                  key={day.id}
+                  key={`${day.id}-${timeSlot}`}
                   className="flex items-center justify-center p-4 border text-inherit bg-slate-50 dark:bg-gray-950 rounded-lg border-dashed"
                 >
                   Нет занятий

@@ -1,11 +1,11 @@
 export interface ScheduleItem {
-  group: string
-  dayOfWeek: string
-  date: string
-  time: string
-  subject: string
-  lessonType: string
-  teacher: string
-  classroom: string
+  id?: string;
+  group: string;
+  dayOfWeek: string;
+  date: string;
+  time: string;
+  subject: string;
+  teacher: string;
+  classroom: string;
+  lessonType: string;
 }
-
