@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { documentCategories } from "@/utils/documents";
 import { DocumentsSection } from "@/components/documents-section";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function SpravkaPage() {
   const router = useRouter();
@@ -19,9 +20,15 @@ export default function SpravkaPage() {
             Выберите необходимый документ и заполните онлайн-форму
           </p>
         </div>
-        <Button onClick={() => router.push("/")} variant="outline">
-          К расписанию
-        </Button>
+        <div className="container flex flex-row justify-between gap-4">
+          <Button onClick={() => router.push("https://rgsu.by")} variant="outline" className="ml-4 w-36 text-center">
+            <ChevronLeft /> Назад
+          </Button>
+          <Button onClick={() => router.push("/")} variant="outline" className="mr-4 w-36 text-center">
+            К расписанию
+            <ChevronRight />
+          </Button>
+        </div>
         {documentCategories.map((category, index) => (
           <DocumentsSection key={index} category={category} />
         ))}
