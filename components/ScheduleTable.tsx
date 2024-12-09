@@ -149,7 +149,7 @@ export default function ScheduleTable({ scheduleData }: ScheduleTableProps) {
       </div>
       <div className="rounded-lg border overflow-hidden">
         <Table className="">
-          <TableHeader className="text-center bg-muted dark:bg-neutral-900">
+          <TableHeader className="text-center bg-slate-100 dark:bg-gray-900">
             <TableRow className="text-center">
               <TableHead className="border-r text-center">Группа</TableHead>
               <TableHead className="border-r text-center">
