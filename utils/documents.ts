@@ -22,7 +22,7 @@ export const documents: Document[] = [
     destination: 'Районный военный комиссариат',
     issueDays: 'Среда, пятница с 13:30-17:30',
     requirements: 'Документ, удостоверяющий личность',
-    link: 'https://forms.yandex.ru/cloud/674f1e0de010db00b3b2e55e/'
+    link: 'https://forms.yandex.ru/cloud/674e03b502848fb6981de002/'
   },
   {
     id: 3,
@@ -33,7 +33,7 @@ export const documents: Document[] = [
     destination: 'По месту требования',
     issueDays: 'Среда, пятница с 13:30-17:30',
     requirements: 'Документ, удостоверяющий личность',
-    link: 'https://forms.yandex.ru/cloud/674f1e0de010db00b3b2e55e/'
+    link: 'https://forms.yandex.ru/cloud/674e03b502848fb6981de002/'
   },
   {
     id: 4,
@@ -44,7 +44,7 @@ export const documents: Document[] = [
     destination: 'Управление соцзащиты',
     issueDays: 'Среда, пятница с 13:30-17:30',
     requirements: 'Документ, удостоверяющий личность',
-    link: 'https://forms.yandex.ru/cloud/674f1e0de010db00b3b2e55e/'
+    link: 'https://forms.yandex.ru/cloud/674e03b502848fb6981de002/'
   },
   {
     id: 5,
