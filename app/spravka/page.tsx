@@ -21,10 +21,10 @@ export default function SpravkaPage() {
           </p>
         </div>
         <div className="container flex flex-row justify-between gap-4">
-          <Button onClick={() => router.push("https://rgsu.by")} variant="outline" className="ml-4 w-36 text-center" target="_blank" rel="noopener noreferrer">
+          <Button onClick={() => router.push("https://rgsu.by")} variant="outline" className="ml-4 w-36 text-center">
             <ChevronLeft /> Назад
           </Button>
-          <Button onClick={() => router.push("/")} variant="outline" className="mr-4 w-36 text-center" target="_blank" rel="noopener noreferrer">
+          <Button onClick={() => router.push("/")} variant="outline" className="mr-4 w-36 text-center">
             К расписанию
             <ChevronRight />
           </Button>
