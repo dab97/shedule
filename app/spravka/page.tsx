@@ -1,17 +1,13 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-// import { useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { documentCategories } from "@/utils/documents";
 import { DocumentsSection } from "@/components/documents-section";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function SpravkaPage() {
-  // const router = useRouter();
-  const openInNewTab = (url) => {
-    const newTab = window.open(url, "_blank", "noopener,noreferrer");
-    if (newTab) newTab.focus();
-  };
+  const router = useRouter();
 
   return (
     <main className="container mx-auto py-8">
@@ -25,10 +21,10 @@ export default function SpravkaPage() {
           </p>
         </div>
         <div className="container flex flex-row justify-between gap-4">
-          <Button onClick={() => openInNewTab("https://rgsu.by")} variant="outline" className="ml-4 w-36 text-center">
+          <Button onClick={() => router.push("https://rgsu.by")} variant="outline" className="ml-4 w-36 text-center" target="_blank" rel="noopener noreferrer">
             <ChevronLeft /> Назад
           </Button>
-          <Button onClick={() => openInNewTab("/")} variant="outline" className="mr-4 w-36 text-center">
+          <Button onClick={() => router.push("/")} variant="outline" className="mr-4 w-36 text-center" target="_blank" rel="noopener noreferrer">
             К расписанию
             <ChevronRight />
           </Button>
