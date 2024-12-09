@@ -70,6 +70,8 @@ export function DocumentCard({ document }: DocumentCardProps) {
             <QRCodeSVG
               value={document.link || document.id.toString()}
               size={200}
+              bgColor={"#ffffff"}
+              fgColor={"#171717"}
             />
           </div>
           <small className="text-sm font-medium leading-none text-muted-foreground">
