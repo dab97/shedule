@@ -56,11 +56,10 @@ export function DocumentCard({ document }: DocumentCardProps) {
             <QrCode />
           </div>
         </DialogTrigger>
-
-        <DialogContent className="w-full sm:w-96 p-6 rounded-lg shadow-xl flex flex-col items-center">
+        <DialogContent className="w-full max-w-[calc(100%-2rem)] sm:max-w-96 mx-auto px-4 py-6 rounded-lg shadow-xl flex flex-col items-center">
           <DialogHeader className="text-center">
             <DialogTitle className="text-xl font-semibold text-center">
-              QR Код документа
+              QR Код
             </DialogTitle>
             <DialogDescription className="mt-2 text-sm font-medium text-center">
               {document.documentType}
@@ -98,15 +97,16 @@ export function DocumentCard({ document }: DocumentCardProps) {
             <p className="text-sm text-muted-foreground capitalize font-semibold">
               {(document.department || "Не указано").toUpperCase()}
             </p>
-            <Badge variant="outline" className="px-3 py-1 rounded-lg font-semibold">
+            <Badge
+              variant="outline"
+              className="px-3 py-1 rounded-lg font-semibold"
+            >
               Каб. {document.room || "Не указан"}
             </Badge>
           </div>
           <div className="flex items-start gap-2">
             <FileText className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
-            <p className="text-sm text-muted-foreground">
-              {document.purpose}
-            </p>
+            <p className="text-sm text-muted-foreground">{document.purpose}</p>
           </div>
           <div className="flex items-start gap-2">
             <MapPin className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
