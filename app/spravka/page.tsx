@@ -22,7 +22,7 @@ export default function SpravkaPage() {
         </div>
         <div className="container flex flex-row justify-between gap-4">
           <Button onClick={() => router.push("https://rgsu.by")} variant="outline" className="ml-4 w-36 text-center">
-            <ChevronLeft /> Назад
+            <ChevronLeft /> На главную
           </Button>
           <Button onClick={() => router.push("/")} variant="outline" className="mr-4 w-36 text-center">
             К расписанию
