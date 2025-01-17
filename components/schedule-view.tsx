@@ -99,7 +99,7 @@ const LessonCard = ({ lessons }: { lessons: ScheduleItem[] }) => {
             <div className="text-xs">{lesson.lessonType}</div>
           </div>
           <div className="mt-2 space-y-1">
-            <div className="flex items-center justify-end space-x-2">
+            <div className="flex items-center justify-end space-x-2">              
               <span className="text-xs text-right">{lesson.teacher}</span>
             </div>
             <div className="flex items-center justify-end space-x-2">
@@ -312,6 +312,11 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
                           <div className="text-xs">{lessons[0].lessonType}</div>
                         </div>
                         <div className="mt-4 space-y-1 flex-grow flex flex-col">
+                        <div className="flex flex-row items-center justify-end space-x-2">
+                            <span className="text-xs text-right font-bold text-muted-foreground">
+                              {lessons[0].group}
+                            </span>
+                          </div>
                           <div className="flex flex-row items-center justify-end space-x-2">
                             <span className="text-xs text-right">
                               {lessons[0].teacher}
@@ -320,7 +325,7 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
                           <div className="flex items-center justify-between space-x-2 mt-auto">
                             <div className="flex items-center justify-start space-x-2">
                               <Clock className="h-4 w-4" />
-                              <span className="text-xs text-left">
+                              <span className="text-xs text-left font-bold">
                                 {lessons[0].time}
                               </span>
                             </div>
@@ -474,6 +479,11 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
                         <div className="text-xs">{lessons[0].lessonType}</div>
                       </div>
                       <div className="mt-4 space-y-1">
+                        <div className="flex items-center justify-end space-x-2">
+                          <span className="text-xs text-right font-bold text-muted-foreground">
+                            {lessons[0].group}
+                          </span>
+                        </div>
                         <div className="flex items-center justify-end space-x-2">
                           <span className="text-xs text-right">
                             {lessons[0].teacher}
