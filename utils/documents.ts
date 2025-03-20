@@ -19,13 +19,13 @@ export const documents: Document[] = [
     documentType: 'Справка в военкомат/на пенсию о том, что гражданин является обучающимся учреждения образования',
     room: '206',
     purpose: 'Для подтверждения обучения',
-    destination: 'Районный военный комиссариат<br>Управление соцзащиты',    
+    destination: 'Районный военный комиссариат. Управление соцзащиты',
     issueDays: 'Среда, пятница с 13:30-17:30',
     requirements: 'Документ, удостоверяющий личность',
     link: 'https://forms.yandex.ru/cloud/674e03b502848fb6981de002/'
   },
   {
-    id: 5,
+    id: 3,
     department: 'Отдел кадров',
     documentType: 'Копия документа о предыдущем образовании; копия договора об оказании платных образовательных услуг',
     room: '206',
@@ -36,7 +36,7 @@ export const documents: Document[] = [
     link: 'https://forms.yandex.ru/cloud/674f1e0de010db00b3b2e55e/'
   },
   {
-    id: 6,
+    id: 4,
     department: 'Бухгалтерия',
     documentType: 'Дополнительное соглашение к договору об изменении стоимости',
     room: '305',
@@ -47,7 +47,7 @@ export const documents: Document[] = [
     link: 'https://docs.google.com/forms/d/1U1rW4ayw1RpfAYXabVgCp55C7eG6-reD3FDw8BOdOWo/edit'
   },
   {
-    id: 7,
+    id: 5,
     department: 'Бухгалтерия',
     documentType: 'О подтверждении произведенной оплаты за обучение (в случае утери квитанции об оплате)',
     room: '305',
