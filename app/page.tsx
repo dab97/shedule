@@ -11,7 +11,7 @@ export default function HomePage() {
     // Проверяем localStorage при загрузке
     const savedSetting = localStorage.getItem('showSchedule');
     if (savedSetting !== null) {
-      setShowSchedule(savedSetting === 'true');
+      setShowSchedule(savedSetting === 'false');
     }
   }, []);
 
