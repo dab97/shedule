@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -14,13 +14,15 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   format,
   startOfWeek,
   addDays,
   parse,
   isWithinInterval,
-} from "date-fns";
+}
+from "date-fns";
 import { ru } from "date-fns/locale";
 import {
   CalendarDays,
@@ -123,6 +125,46 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
   const [selectedLesson, setSelectedLesson] = useState<ScheduleItem | null>(
     null
   );
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState<React.ReactNode>("");
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsDesktop(window.innerWidth >= 640); // Tailwind's 'sm' breakpoint
+    };
+    handleResize(); // Set initial value
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const handleSaveGroup = () => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("selectedGroup", selectedGroup);
+      localStorage.setItem("selectedTeacher", "all"); // Очищаем выбор преподавателя
+      setSelectedTeacher("all"); // Сбрасываем состояние преподавателя
+      setAlertMessage(
+        <>
+          Выбор группы "<span className="font-bold text-ring">{selectedGroup}</span>" сохранен!
+        </>
+      );
+      setShowAlert(true);
+    }
+  };
+
+  const handleSaveTeacher = () => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("selectedTeacher", selectedTeacher);
+      localStorage.setItem("selectedGroup", "all"); // Очищаем выбор группы
+      setSelectedGroup("all"); // Сбрасываем состояние группы
+      setAlertMessage(
+        <>
+          Выбор преподавателя "<span className="font-bold text-ring">{selectedTeacher}</span>" сохранен!
+        </>
+      );
+      setShowAlert(true);
+    }
+  };
 
   const getCurrentWeekDates = () => {
     const start = startOfWeek(date, { weekStartsOn: 1 });
@@ -158,19 +200,38 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
     });
   }, [scheduleData, selectedGroup, selectedTeacher, date]);
 
-  const uniqueGroups = Array.from(
+  const uniqueGroups = useMemo(() => Array.from(
     new Set(scheduleData.map((item) => item.group))
-  );
-  const uniqueTeachers = Array.from(
+  ), [scheduleData]);
+  const uniqueTeachers = useMemo(() => Array.from(
     new Set(scheduleData.map((item) => item.teacher))
-  );
+  ), [scheduleData]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && scheduleData.length > 0) {
+      const storedGroup = localStorage.getItem("selectedGroup");
+      const storedTeacher = localStorage.getItem("selectedTeacher");
+
+      if (storedGroup && (uniqueGroups.includes(storedGroup) || storedGroup === "all")) {
+        setSelectedGroup(storedGroup);
+      } else {
+        setSelectedGroup("all");
+      }
+
+      if (storedTeacher && (uniqueTeachers.includes(storedTeacher) || storedTeacher === "all")) {
+        setSelectedTeacher(storedTeacher);
+      } else {
+        setSelectedTeacher("all");
+      }
+    }
+  }, [scheduleData, uniqueGroups, uniqueTeachers]);
 
   return (
     <div className="container mx-auto p-4 space-y-6 overflow-x-auto">
       <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
         <div className="min-w-48 space-y-2">
           <label className="text-sm font-medium">Группа</label>
-          <Select onValueChange={(value) => setSelectedGroup(value)}>
+          <Select onValueChange={(value: string) => setSelectedGroup(value)} value={selectedGroup}>
             <SelectTrigger>
               <SelectValue placeholder="Все группы" />
             </SelectTrigger>
@@ -186,11 +247,14 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
                 ))}
             </SelectContent>
           </Select>
+          {selectedGroup !== "all" && selectedTeacher === "all" && (
+            <Button onClick={handleSaveGroup} className="w-full mt-2">Моя группа</Button>
+          )}
         </div>
 
         <div className="min-w-48 space-y-2">
           <label className="text-sm font-medium">Преподаватель</label>
-          <Select onValueChange={(value) => setSelectedTeacher(value)}>
+          <Select onValueChange={(value: string) => setSelectedTeacher(value)} value={selectedTeacher}>
             <SelectTrigger>
               <SelectValue placeholder="Все преподаватели" />
             </SelectTrigger>
@@ -206,6 +270,9 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
                 ))}
             </SelectContent>
           </Select>
+          {selectedTeacher !== "all" && selectedGroup === "all" && (
+            <Button onClick={handleSaveTeacher} className="w-full mt-2">Это я</Button>
+          )}
         </div>
 
         <div className="min-w-40 space-y-2">
@@ -227,7 +294,7 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
               <Calendar
                 mode="single"
                 selected={date}
-                onSelect={(newDate) => newDate && setDate(newDate)}
+                onSelect={(newDate: Date | undefined) => newDate && setDate(newDate)}
                 initialFocus
                 weekStartsOn={1}
                 locale={ru}
@@ -580,6 +647,34 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
           </div>
         ))}
       </div>
+
+      {showAlert && (isDesktop ? (
+        <Dialog open={showAlert} onOpenChange={setShowAlert}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Уведомление</DialogTitle>
+            </DialogHeader>
+            <Alert>
+              <AlertDescription>{alertMessage}</AlertDescription>
+            </Alert>
+            <Button onClick={() => setShowAlert(false)}>ОК</Button>
+          </DialogContent>
+        </Dialog>
+      ) : (
+        <Drawer open={showAlert} onOpenChange={setShowAlert}>
+          <DrawerContent>
+            <DrawerHeader>
+              <DrawerTitle>Уведомление</DrawerTitle>
+            </DrawerHeader>
+            <div className="p-4">
+              <Alert>
+                <AlertDescription>{alertMessage}</AlertDescription>
+              </Alert>
+              <Button onClick={() => setShowAlert(false)} className="w-full mt-4">ОК</Button>
+            </div>
+          </DrawerContent>
+        </Drawer>
+      ))}
     </div>
   );
 }
