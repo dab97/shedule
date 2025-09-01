@@ -16,16 +16,27 @@ export const documents: Document[] = [
   {
     id: 2,
     department: 'Отдел кадров',
-    documentType: 'Справка в военкомат/на пенсию о том, что гражданин является обучающимся учреждения образования',
+    documentType: 'Справка в военкомат о том, что гражданин является обучающимся учреждения образования',
     room: '206',
     purpose: 'Для подтверждения обучения',
-    destination: 'Районный военный комиссариат. Управление соцзащиты',
-    issueDays: 'Среда, пятница с 13:30-17:30',
+    destination: 'Районный военный комиссариат',
+    issueDays: 'Среда, пятница с 13:30-17:30. От 3 до 5 рабочих дней',
     requirements: 'Документ, удостоверяющий личность',
     link: 'https://forms.yandex.ru/cloud/674e03b502848fb6981de002/'
   },
   {
     id: 3,
+    department: 'Отдел кадров',
+    documentType: 'Справка в соц. защиту для получения пенсии по случаю потери кормильца',    
+    room: '206',
+    purpose: 'Для подтверждения обучения',
+    destination: 'Управление социальной защиты',
+    issueDays: 'Среда, пятница с 13:30-17:30. От 3 до 5 рабочих дней',
+    requirements: 'Документ, удостоверяющий личность',
+    link: 'https://forms.yandex.ru/cloud/68b4ad5cd0468822bfbd6420/'
+  },
+  {
+    id: 4,
     department: 'Отдел кадров',
     documentType: 'Копия документа о предыдущем образовании; копия договора об оказании платных образовательных услуг',
     room: '206',
@@ -36,7 +47,7 @@ export const documents: Document[] = [
     link: 'https://forms.yandex.ru/cloud/674f1e0de010db00b3b2e55e/'
   },
   {
-    id: 4,
+    id: 5,
     department: 'Бухгалтерия',
     documentType: 'Дополнительное соглашение к договору об изменении стоимости',
     room: '305',
@@ -47,7 +58,7 @@ export const documents: Document[] = [
     link: 'https://docs.google.com/forms/d/1U1rW4ayw1RpfAYXabVgCp55C7eG6-reD3FDw8BOdOWo/edit'
   },
   {
-    id: 5,
+    id: 6,
     department: 'Бухгалтерия',
     documentType: 'О подтверждении произведенной оплаты за обучение (в случае утери квитанции об оплате)',
     room: '305',
