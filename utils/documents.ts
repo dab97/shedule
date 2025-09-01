@@ -20,7 +20,7 @@ export const documents: Document[] = [
     room: '206',
     purpose: 'Для подтверждения обучения',
     destination: 'Районный военный комиссариат',
-    issueDays: 'Среда, пятница с 13:30-17:30. От 3 до 5 рабочих дней',
+    issueDays: 'От 3 до 5 рабочих дней',
     requirements: 'Документ, удостоверяющий личность',
     link: 'https://forms.yandex.ru/cloud/674e03b502848fb6981de002/'
   },
@@ -31,7 +31,7 @@ export const documents: Document[] = [
     room: '206',
     purpose: 'Для подтверждения обучения',
     destination: 'Управление социальной защиты',
-    issueDays: 'Среда, пятница с 13:30-17:30. От 3 до 5 рабочих дней',
+    issueDays: 'От 3 до 5 рабочих дней',
     requirements: 'Документ, удостоверяющий личность',
     link: 'https://forms.yandex.ru/cloud/68b4ad5cd0468822bfbd6420/'
   },
