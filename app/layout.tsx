@@ -29,8 +29,8 @@ const evolventaBold = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Расписание занятий на 29.11-29.12",
-  description: "Актуальное расписание занятий на 29.11.2024 - 29.12.2024",
+  title: "Расписание занятий РГСУ",
+  description: "Актуальное расписание занятий на 01.09.2025 - 13.02.2026",
   icons: {
     icon: '/favicon.png',
     // apple: '/apple-icon.png',
@@ -38,8 +38,8 @@ export const metadata: Metadata = {
   // viewport: "width=device-width, initial-scale=1, maximum-scale=1",
   // themeColor: "system",
   openGraph: {
-    title: "Расписание занятий на 29.11-29.12",
-    description: "Актуальное расписание занятий на 29.11.2024 - 294.12.2024",    
+    title: "Расписание занятий РГСУ",
+    description: "Актуальное расписание занятий на 01.09.2025 - 13.02.2026",
     type: 'website',
     images: [
       {
