@@ -22,7 +22,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import jsPDF from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 
 interface ScheduleTableProps {
   scheduleData: ScheduleItem[];
@@ -46,15 +46,20 @@ export default function ScheduleTable({ scheduleData }: ScheduleTableProps) {
     const doc = new jsPDF();
 
     doc.addFont(
-      "https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.66/fonts/Roboto/Roboto-Regular.ttf",
+      "https://fonts.cdnfonts.com/s/12165/Roboto-Regular.ttf",
       "Roboto",
       "normal"
     );
-    doc.setFont("Roboto");
+    doc.addFont(
+      "https://fonts.cdnfonts.com/s/12165/Roboto-Bold.ttf",
+      "Roboto-Bold",
+      "bold"
+    );
+    doc.setFont("Roboto-Bold", "bold");
+    doc.setFont("Roboto", "normal");
 
-    // @ts-ignore
-    doc.autoTable({
-      margin: 10,      
+    autoTable(doc, {
+      margin: 8,      
       head: [
         [
           "Группа",
@@ -78,17 +83,17 @@ export default function ScheduleTable({ scheduleData }: ScheduleTableProps) {
         item.classroom,
       ]),
       rowPageBreak: 'auto',
-      styles: { font: "Roboto", fontSize: 9,},
+      styles: { font: "Roboto", fontSize: 8,},
       headStyles: {
         fillColor: [200, 200, 200],
         textColor: 0,        
-        fontStyle: "bold",
+        fontStyle: "normal",
         valign: "middle",
         halign: "center",
       },
       bodyStyles: {
         valign: 'top',
-        halign: "auto",
+        halign: "left",
       },
     });
 
