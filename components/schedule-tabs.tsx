@@ -44,20 +44,7 @@ export function ScheduleTabs({ scheduleData, isLoading }: ScheduleTabsProps) {
       </TabsContent>
 
       <TabsContent value="table">
-        {isLoading ? (
-          <div className="space-y-4">
-            {Array.from({ length: 6 }).map((_, index) => (
-              <div key={index} className="grid grid-cols-7 gap-2">
-                <Skeleton className="h-10 w-full rounded-md" />
-                {Array.from({ length: 7 }).map((_, idx) => (
-                  <Skeleton key={idx} className="h-10 w-full rounded-md" />
-                ))}
-              </div>
-            ))}
-          </div>
-        ) : (
-          <ScheduleTable scheduleData={scheduleData} />
-        )}
+        <ScheduleTable scheduleData={scheduleData} isLoading={isLoading} />
       </TabsContent>
     </Tabs>
   )

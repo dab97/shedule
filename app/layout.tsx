@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ThemeProvider } from "next-themes";
+import { Toaster } from "@/components/ui/sonner";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
 import localFont from "next/font/local";
 import "./globals.css";
@@ -29,25 +30,41 @@ const evolventaBold = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Расписание занятий РГСУ",
-  description: "Актуальное расписание занятий на 01.09.2025 - 13.02.2026",
+  title: "Расписание занятий РГСУ | Филиал в Минске",
+  description: "Актуальное расписание занятий Филиала РГСУ в г. Минске на 2025-2026 учебный год. Поиск по группам, преподавателям и датам. Экспорт в PDF.",
+  keywords: ["расписание", "РГСУ", "Минск", "занятия", "университет", "студенты", "преподаватели"],
+  authors: [{ name: "Филиал РГСУ в г. Минске" }],
+  robots: {
+    index: true,
+    follow: true,
+  },
   icons: {
     icon: '/favicon.png',
-    // apple: '/apple-icon.png',
   },
-  // viewport: "width=device-width, initial-scale=1, maximum-scale=1",
-  // themeColor: "system",
+  metadataBase: new URL('https://shedule-rgsu.vercel.app'),
+  alternates: {
+    canonical: '/',
+  },
   openGraph: {
-    title: "Расписание занятий РГСУ",
-    description: "Актуальное расписание занятий на 01.09.2025 - 13.02.2026",
+    title: "Расписание занятий РГСУ | Филиал в Минске",
+    description: "Актуальное расписание занятий Филиала РГСУ в г. Минске на 2025-2026 учебный год",
     type: 'website',
+    locale: 'ru_RU',
+    siteName: 'Расписание РГСУ',
     images: [
       {
-        url: 'https://shedule-rgsu.vercel.app/og-image.png',
-        width: 800,
-        height: 600,
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'Расписание занятий РГСУ',
       },
-    ],    
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: "Расписание занятий РГСУ",
+    description: "Актуальное расписание занятий Филиала РГСУ в г. Минске",
+    images: ['/og-image.png'],
   },
 };
 
@@ -58,11 +75,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`} suppressHydrationWarning>
       <body className="antialiased">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <ThemeSwitcher />
           {children}
+          <Toaster richColors position="top-center" />
         </ThemeProvider>
         <Analytics />
         <SpeedInsights />

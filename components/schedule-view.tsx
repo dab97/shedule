@@ -14,7 +14,7 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { showToast } from "@/components/ui/sonner";
 import {
   format,
   startOfWeek,
@@ -22,7 +22,7 @@ import {
   parse,
   isWithinInterval,
 }
-from "date-fns";
+  from "date-fns";
 import { ru } from "date-fns/locale";
 import {
   CalendarDays,
@@ -32,6 +32,12 @@ import {
   FileText,
   User,
   Users,
+  Check,
+  ChevronsUpDown,
+  CalendarSync,
+  Copy,
+  Link,
+  Plus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -41,6 +47,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command";
 import {
   Select,
   SelectContent,
@@ -101,7 +114,7 @@ const LessonCard = ({ lessons }: { lessons: ScheduleItem[] }) => {
             <div className="text-xs">{lesson.lessonType}</div>
           </div>
           <div className="mt-2 space-y-1">
-            <div className="flex items-center justify-end space-x-2">              
+            <div className="flex items-center justify-end space-x-2">
               <span className="text-xs text-right">{lesson.teacher}</span>
             </div>
             <div className="flex items-center justify-end space-x-2">
@@ -125,9 +138,9 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
   const [selectedLesson, setSelectedLesson] = useState<ScheduleItem | null>(
     null
   );
-  const [showAlert, setShowAlert] = useState(false);
-  const [alertMessage, setAlertMessage] = useState<React.ReactNode>("");
   const [isDesktop, setIsDesktop] = useState(false);
+  const [groupComboboxOpen, setGroupComboboxOpen] = useState(false);
+  const [teacherComboboxOpen, setTeacherComboboxOpen] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
@@ -141,28 +154,26 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
   const handleSaveGroup = () => {
     if (typeof window !== "undefined") {
       localStorage.setItem("selectedGroup", selectedGroup);
-      localStorage.setItem("selectedTeacher", "all"); // Очищаем выбор преподавателя
-      setSelectedTeacher("all"); // Сбрасываем состояние преподавателя
-      setAlertMessage(
-        <>
-          Выбор группы "<span className="font-bold text-ring">{selectedGroup}</span>" сохранен!
-        </>
-      );
-      setShowAlert(true);
+      localStorage.setItem("selectedTeacher", "all");
+      setSelectedTeacher("all");
+      showToast({
+        title: `Группа "${selectedGroup}" сохранена!`,
+        message: "Теперь это ваша группа по умолчанию",
+        variant: 'success',
+      });
     }
   };
 
   const handleSaveTeacher = () => {
     if (typeof window !== "undefined") {
       localStorage.setItem("selectedTeacher", selectedTeacher);
-      localStorage.setItem("selectedGroup", "all"); // Очищаем выбор группы
-      setSelectedGroup("all"); // Сбрасываем состояние группы
-      setAlertMessage(
-        <>
-          Выбор преподавателя "<span className="font-bold text-ring">{selectedTeacher}</span>" сохранен!
-        </>
-      );
-      setShowAlert(true);
+      localStorage.setItem("selectedGroup", "all");
+      setSelectedGroup("all");
+      showToast({
+        title: `Преподаватель "${selectedTeacher}" сохранён!`,
+        message: "Теперь это ваш профиль по умолчанию",
+        variant: 'success',
+      });
     }
   };
 
@@ -229,53 +240,175 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
   return (
     <div className="container mx-auto p-4 space-y-6 overflow-x-auto">
       <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
-        <div className="min-w-48 space-y-2">
+        <div className="w-full sm:w-56 space-y-2">
           <label className="text-sm font-medium">Группа</label>
-          <Select onValueChange={(value: string) => setSelectedGroup(value)} value={selectedGroup}>
-            <SelectTrigger>
-              <SelectValue placeholder="Все группы" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Все группы</SelectItem>
-              {uniqueGroups
-                .slice()
-                .sort((a, b) => a.localeCompare(b))
-                .map((group) => (
-                  <SelectItem key={group} value={group}>
-                    {group}
-                  </SelectItem>
-                ))}
-            </SelectContent>
-          </Select>
+          <Popover open={groupComboboxOpen} onOpenChange={setGroupComboboxOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={groupComboboxOpen}
+                className="w-full justify-between font-normal"
+              >
+                <span className="truncate">
+                  {selectedGroup === "all" ? "Все группы" : selectedGroup}
+                </span>
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[calc(100vw-2rem)] sm:w-56 p-0">
+              <Command>
+                <CommandInput placeholder="Поиск группы..." />
+                <CommandEmpty>Группа не найдена</CommandEmpty>
+                <CommandGroup className="max-h-64 overflow-y-auto">
+                  <CommandItem
+                    value="all"
+                    onSelect={() => {
+                      setSelectedGroup("all");
+                      setGroupComboboxOpen(false);
+                    }}
+                  >
+                    <Check
+                      className={cn(
+                        "mr-2 h-4 w-4",
+                        selectedGroup === "all" ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                    Все группы
+                  </CommandItem>
+                  {uniqueGroups
+                    .slice()
+                    .sort((a, b) => a.localeCompare(b))
+                    .map((group) => (
+                      <CommandItem
+                        key={group}
+                        value={group}
+                        onSelect={(currentValue) => {
+                          setSelectedGroup(currentValue === selectedGroup ? "all" : currentValue);
+                          setGroupComboboxOpen(false);
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            selectedGroup === group ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        {group}
+                      </CommandItem>
+                    ))}
+                </CommandGroup>
+              </Command>
+            </PopoverContent>
+          </Popover>
           {selectedGroup !== "all" && selectedTeacher === "all" && (
             <Button onClick={handleSaveGroup} className="w-full mt-2">Моя группа</Button>
           )}
+          {selectedGroup !== "all" && (
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="w-full mt-2">
+                  <CalendarSync className="h-4 w-4" />
+                  Подписаться на календарь
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[calc(100vw-2rem)] sm:w-80" align="start">
+                <div className="space-y-3">
+                  <p className="text-sm font-medium">Ссылка для подписки:</p>
+                  <div className="flex items-center gap-2">
+                    <code className="flex-1 text-xs bg-muted p-2 rounded truncate">
+                      {typeof window !== 'undefined' ? `${window.location.origin}/api/calendar/${encodeURIComponent(selectedGroup)}` : ''}
+                    </code>
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      onClick={() => {
+                        navigator.clipboard.writeText(`${window.location.origin}/api/calendar/${encodeURIComponent(selectedGroup)}`);
+                        showToast({ title: "Готово!", message: "Ссылка скопирована в буфер обмена", variant: "success" });
+                      }}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <div className="text-xs text-muted-foreground space-y-1">
+                    <p className="font-medium">iPhone (iOS):</p>
+                    <p>Настройки → Календарь → Учётные записи → Добавить → Другое → Подписка</p>
+                    <p className="font-medium mt-2">Google Calendar:</p>
+                    <p className="flex items-center gap-1 flex-wrap">Другие календари → <Badge variant="outline" className="h-4 w-4 p-0 inline-flex items-center justify-center rounded-full"><Plus className="h-2.5 w-2.5 text-muted-foreground" strokeWidth={3} /></Badge> → По URL</p>
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
+          )}
         </div>
 
-        <div className="min-w-48 space-y-2">
+        <div className="w-full sm:w-80 space-y-2">
           <label className="text-sm font-medium">Преподаватель</label>
-          <Select onValueChange={(value: string) => setSelectedTeacher(value)} value={selectedTeacher}>
-            <SelectTrigger>
-              <SelectValue placeholder="Все преподаватели" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Все преподаватели</SelectItem>
-              {uniqueTeachers
-                .slice()
-                .sort((a, b) => a.localeCompare(b))
-                .map((teacher) => (
-                  <SelectItem key={teacher} value={teacher}>
-                    {teacher}
-                  </SelectItem>
-                ))}
-            </SelectContent>
-          </Select>
+          <Popover open={teacherComboboxOpen} onOpenChange={setTeacherComboboxOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={teacherComboboxOpen}
+                className="w-full justify-between font-normal"
+              >
+                <span className="truncate">
+                  {selectedTeacher === "all" ? "Все преподаватели" : selectedTeacher}
+                </span>
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[calc(100vw-2rem)] sm:w-80 p-0">
+              <Command>
+                <CommandInput placeholder="Поиск преподавателя..." />
+                <CommandEmpty>Преподаватель не найден</CommandEmpty>
+                <CommandGroup className="max-h-64 overflow-y-auto">
+                  <CommandItem
+                    value="all"
+                    onSelect={() => {
+                      setSelectedTeacher("all");
+                      setTeacherComboboxOpen(false);
+                    }}
+                  >
+                    <Check
+                      className={cn(
+                        "mr-2 h-4 w-4",
+                        selectedTeacher === "all" ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                    Все преподаватели
+                  </CommandItem>
+                  {uniqueTeachers
+                    .slice()
+                    .sort((a, b) => a.localeCompare(b))
+                    .map((teacher) => (
+                      <CommandItem
+                        key={teacher}
+                        value={teacher}
+                        onSelect={(currentValue) => {
+                          setSelectedTeacher(currentValue === selectedTeacher ? "all" : currentValue);
+                          setTeacherComboboxOpen(false);
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            "mr-2 h-4 w-4",
+                            selectedTeacher === teacher ? "opacity-100" : "opacity-0"
+                          )}
+                        />
+                        {teacher}
+                      </CommandItem>
+                    ))}
+                </CommandGroup>
+              </Command>
+            </PopoverContent>
+          </Popover>
           {selectedTeacher !== "all" && selectedGroup === "all" && (
             <Button onClick={handleSaveTeacher} className="w-full mt-2">Это я</Button>
           )}
         </div>
 
-        <div className="min-w-40 space-y-2">
+        <div className="w-full sm:w-64 space-y-2">
           <label className="text-sm font-medium">Неделя</label>
           <Popover>
             <PopoverTrigger asChild>
@@ -290,7 +423,7 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
                 <CalendarIcon className="h-4 w-4" />
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
+            <PopoverContent className="w-64 p-0" align="start">
               <Calendar
                 mode="single"
                 selected={date}
@@ -379,7 +512,7 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
                           <div className="text-xs">{lessons[0].lessonType}</div>
                         </div>
                         <div className="mt-4 space-y-1 flex-grow flex flex-col">
-                        <div className="flex flex-row items-center justify-end space-x-2">
+                          <div className="flex flex-row items-center justify-end space-x-2">
                             <span className="text-xs text-right font-bold text-muted-foreground">
                               {lessons[0].group}
                             </span>
@@ -648,33 +781,7 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
         ))}
       </div>
 
-      {showAlert && (isDesktop ? (
-        <Dialog open={showAlert} onOpenChange={setShowAlert}>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>Уведомление</DialogTitle>
-            </DialogHeader>
-            <Alert>
-              <AlertDescription>{alertMessage}</AlertDescription>
-            </Alert>
-            <Button onClick={() => setShowAlert(false)}>ОК</Button>
-          </DialogContent>
-        </Dialog>
-      ) : (
-        <Drawer open={showAlert} onOpenChange={setShowAlert}>
-          <DrawerContent>
-            <DrawerHeader>
-              <DrawerTitle>Уведомление</DrawerTitle>
-            </DrawerHeader>
-            <div className="p-4">
-              <Alert>
-                <AlertDescription>{alertMessage}</AlertDescription>
-              </Alert>
-              <Button onClick={() => setShowAlert(false)} className="w-full mt-4">ОК</Button>
-            </div>
-          </DrawerContent>
-        </Drawer>
-      ))}
+
     </div>
   );
 }

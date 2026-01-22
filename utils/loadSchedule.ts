@@ -1,15 +1,5 @@
 import { google } from "googleapis";
-
-export type ScheduleItem = {
-  group: string;
-  dayOfWeek: string;
-  date: string;
-  time: string;
-  subject: string;
-  lessonType: string;
-  teacher: string;
-  classroom: string;
-};
+import { ScheduleItem } from "@/types/schedule";
 
 export const loadSchedule = async (): Promise<ScheduleItem[]> => {
   try {
