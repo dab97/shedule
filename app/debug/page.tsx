@@ -262,9 +262,9 @@ export default function DebugPage() {
     }
 
     return (
-        <div className="container mx-auto p-8 space-y-8">
-            <div className="flex items-center justify-between">
-                <h1 className="text-xl font-semibold flex items-center gap-3">
+        <div className="container mx-auto p-4 sm:p-8 space-y-6 sm:space-y-8">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <h1 className="text-lg sm:text-xl font-semibold flex items-center gap-2 sm:gap-3">
                     <Badge variant="outline" className="text-xs font-mono">Debug</Badge>
                     Проверка данных расписания
                 </h1>
@@ -598,9 +598,9 @@ export default function DebugPage() {
                                 {stats?.hasDuplicates ? (
                                     <div className={`space-y-2 ${showAllDuplicates ? "" : "max-h-60 overflow-y-auto"}`}>
                                         {(showAllDuplicates ? stats.duplicates : stats.duplicates.slice(0, 10)).map(([key, count]) => (
-                                            <div key={key} className="flex items-center justify-between text-sm">
-                                                <span className="font-mono truncate text-xs">{key}</span>
-                                                <Badge variant="outline">{count}x</Badge>
+                                            <div key={key} className="flex items-start justify-between gap-2 text-sm">
+                                                <span className="font-mono text-xs break-all min-w-0">{key}</span>
+                                                <Badge variant="outline" className="shrink-0">{count}x</Badge>
                                             </div>
                                         ))}
                                         {stats.duplicates.length > 10 && !showAllDuplicates && (

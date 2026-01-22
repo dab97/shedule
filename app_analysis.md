@@ -23,6 +23,7 @@
 | # | Задача | Файлы |
 |---|--------|-------|
 | 4 | Удаление дубликата типа ScheduleItem | `utils/loadSchedule.ts` |
+| 6 | PWA поддержка | `public/manifest.json`, `public/sw.js`, `app/layout.tsx` |
 | 7 | Улучшить SEO | `app/layout.tsx` |
 | 10 | Уведомления об изменениях | `components/DynamicSchedule.tsx` |
 | 11 | Удаление неиспользуемых зависимостей | `package.json` |
@@ -41,7 +42,6 @@
 |---|--------|-----------|
 | 1 | Кеширование API на сервере | Низкая |
 | 5 | Сохранение фильтров в URL | Низкая |
-| 6 | PWA поддержка | Средняя |
 | 8 | Тёмная тема для PDF | Низкая |
 | 9 | Интеграция с календарём (iCal) | Средняя |
 
@@ -87,8 +87,8 @@ export const revalidate = 300; // Кеш на 5 минут
 /schedule?group=СРБ-Б-04-3-2025-1&week=2026-01-20
 ```
 
-#### 6. PWA поддержка ❌ НЕ НАЧАТО
-Добавить `next-pwa`.
+#### 6. PWA поддержка ✅ ВЫПОЛНЕНО
+Добавлен manifest.json, Service Worker, PWA meta-теги.
 
 #### 7. Улучшить SEO ✅ ВЫПОЛНЕНО
 Добавлены keywords, twitter cards, OpenGraph, canonical URL.

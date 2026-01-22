@@ -40,6 +40,16 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: '/favicon.png',
+    apple: '/favicon.png',
+  },
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Расписание РГСУ',
+  },
+  formatDetection: {
+    telephone: false,
   },
   metadataBase: new URL('https://shedule-rgsu.vercel.app'),
   alternates: {
@@ -84,6 +94,19 @@ export default function RootLayout({
         </ThemeProvider>
         <Analytics />
         <SpeedInsights />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js').catch(function(err) {
+                    console.log('ServiceWorker registration failed: ', err);
+                  });
+                });
+              }
+            `,
+          }}
+        />
       </body>
     </html>
   );

@@ -81,7 +81,7 @@ export async function GET(
             const summary = escapeIcsText(item.subject);
             const location = item.classroom ? `Ауд. ${escapeIcsText(item.classroom)}` : "";
             const description = escapeIcsText(
-                `Преподаватель: ${item.teacher}${item.lessonType ? `\\nТип: ${item.lessonType}` : ""}`
+                `Преподаватель: ${item.teacher}${item.lessonType ? `\nТип: ${item.lessonType}` : ""}`
             );
 
             icsLines.push(
