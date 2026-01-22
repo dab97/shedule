@@ -13,10 +13,14 @@ export const loadSchedule = async (): Promise<ScheduleItem[]> => {
     console.log("Переменные окружения проверены");
 
     // Инициализация API таблиц
+    const privateKey = process.env.GOOGLE_PRIVATE_KEY
+      ? process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, "\n").replace(/^"|"$/g, "")
+      : undefined;
+
     const auth = new google.auth.GoogleAuth({
       credentials: {
         client_email: process.env.GOOGLE_CLIENT_EMAIL,
-        private_key: process.env.GOOGLE_PRIVATE_KEY.replace(/\\n/g, "\n"),
+        private_key: privateKey,
       },
       scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"],
     });
