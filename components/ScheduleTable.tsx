@@ -233,8 +233,33 @@ export default function ScheduleTable({ scheduleData, isLoading = false }: Sched
       },
     });
 
-    doc.save("Расписание занятий.pdf");
-  }, [sortedData]);
+    // Формирование динамического имени файла
+    let fileName = "Расписание занятий";
+    if (filter) {
+      const activeOption = filterOptions.find(opt => opt.value === filter);
+      const displayValue = activeOption ? activeOption.label : filter;
+
+      if (filterType === "teacher") {
+        // Форматируем ФИО: Фамилия Имя Отчество -> Фамилия И. И.
+        const parts = displayValue.trim().split(/\s+/);
+        if (parts.length >= 2) {
+          const lastName = parts[0];
+          const initials = parts.slice(1).map(p => `${p[0].toUpperCase()}.`).join(" ");
+          fileName += ` ${lastName} ${initials}`;
+        } else {
+          fileName += ` ${displayValue}`;
+        }
+      } else if (filterType === "group") {
+        fileName += ` группы ${displayValue}`;
+      } else {
+        fileName += ` ${displayValue}`;
+      }
+    }
+
+    // Очистка от запрещенных символов
+    fileName = fileName.replace(/[\\/:*?"<>|]/g, "").trim();
+    doc.save(`${fileName}.pdf`);
+  }, [sortedData, filter, filterType, filterOptions]);
 
   // Получить название фильтра для плейсхолдера
   const getFilterPlaceholder = useCallback(() => {
