@@ -315,7 +315,7 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
           {selectedGroup !== "all" && selectedTeacher === "all" && (
             <Button onClick={handleSaveGroup} className="w-full mt-2">Моя группа</Button>
           )}
-          {selectedGroup !== "all" && (
+          {selectedGroup !== "all" && selectedTeacher === "all" && (
             <Popover modal={false}>
               <PopoverTrigger asChild>
                 <Button variant="outline" className="w-full mt-2">
@@ -342,10 +342,10 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
                     </Button>
                   </div>
                   <div className="text-xs text-muted-foreground space-y-1">
-                    <p className="font-medium">iPhone (iOS):</p>
-                    <p>Настройки → Календарь → Учётные записи → Добавить → Другое → Подписка</p>
-                    <p className="font-medium mt-2">Google Calendar:</p>
-                    <p className="flex items-center gap-1 flex-wrap">Другие календари → <Badge variant="outline" className="h-4 w-4 p-0 inline-flex items-center justify-center rounded-full"><Plus className="h-2.5 w-2.5 text-muted-foreground" strokeWidth={3} /></Badge> → По URL</p>
+                    <div className="font-medium">iPhone (iOS):</div>
+                    <div>Настройки → Календарь → Учётные записи → Добавить → Другое → Подписка</div>
+                    <div className="font-medium mt-2">Google Calendar:</div>
+                    <div className="flex items-center gap-1 flex-wrap">Другие календари → <Badge variant="outline" className="h-4 w-4 p-0 inline-flex items-center justify-center rounded-full"><Plus className="h-2.5 w-2.5 text-muted-foreground" strokeWidth={3} /></Badge> → По URL</div>
                   </div>
                 </div>
               </PopoverContent>
@@ -415,7 +415,44 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
             </PopoverContent>
           </Popover>
           {selectedTeacher !== "all" && selectedGroup === "all" && (
-            <Button onClick={handleSaveTeacher} className="w-full mt-2">Это я</Button>
+            <>
+              <Button onClick={handleSaveTeacher} className="w-full mt-2">Это я</Button>
+              <Popover modal={false}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="w-full mt-2">
+                    <CalendarSync className="h-4 w-4" />
+                    Подписаться на календарь
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[calc(100vw-2rem)] sm:w-80" align="start">
+                  <div className="space-y-3">
+                    <p className="text-sm font-medium">Ссылка для подписки (преподаватель):</p>
+                    <div className="flex items-center gap-2">
+                      <code className="flex-1 text-xs bg-muted p-2 rounded truncate">
+                        {typeof window !== 'undefined' ? `${window.location.origin}${API_ENDPOINTS.CALENDAR}${encodeURIComponent(selectedTeacher)}?type=teacher` : ''}
+                      </code>
+                      <Button
+                        size="icon"
+                        variant="outline"
+                        onClick={() => {
+                          const url = `${window.location.origin}${API_ENDPOINTS.CALENDAR}${encodeURIComponent(selectedTeacher)}?type=teacher`;
+                          navigator.clipboard.writeText(url);
+                          showToast({ title: "Готово!", message: "Ссылка скопирована в буфер обмена", variant: "success" });
+                        }}
+                      >
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <div className="text-xs text-muted-foreground space-y-1">
+                      <div className="font-medium">iPhone (iOS):</div>
+                      <div>Настройки → Календарь → Учётные записи → Добавить → Другое → Подписка</div>
+                      <div className="font-medium mt-2">Google Calendar:</div>
+                      <div className="flex items-center gap-1 flex-wrap">Другие календари → <Badge variant="outline" className="h-4 w-4 p-0 inline-flex items-center justify-center rounded-full"><Plus className="h-2.5 w-2.5 text-muted-foreground" strokeWidth={3} /></Badge> → По URL</div>
+                    </div>
+                  </div>
+                </PopoverContent>
+              </Popover>
+            </>
           )}
         </div>
 

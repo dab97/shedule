@@ -44,18 +44,23 @@ export async function GET(
 ) {
     try {
         const { group } = await context.params;
-        const groupName = decodeURIComponent(group);
+        const itemName = decodeURIComponent(group);
+        const { searchParams } = new URL(request.url);
+        const type = searchParams.get("type") || "group"; // 'group' или 'teacher'
 
         // Загрузка данных расписания
         const schedule = await loadSchedule();
 
-        // Фильтрация по группе
-        const groupEvents = schedule.filter(
-            (item) => item.group.toLowerCase() === groupName.toLowerCase()
-        );
+        // Фильтрация в зависимости от типа
+        const events = schedule.filter((item) => {
+            if (type === "teacher") {
+                return item.teacher.toLowerCase() === itemName.toLowerCase();
+            }
+            return item.group.toLowerCase() === itemName.toLowerCase();
+        });
 
-        if (groupEvents.length === 0) {
-            return new NextResponse("Расписание для группы не найдено", {
+        if (events.length === 0) {
+            return new NextResponse(`Расписание для ${type === "teacher" ? "преподавателя" : "группы"} не найдено`, {
                 status: 404,
                 headers: { "Content-Type": "text/plain; charset=utf-8" }
             });
@@ -68,11 +73,11 @@ export async function GET(
             "PRODID:-//RGSU Schedule//Minsk Branch//RU",
             "CALSCALE:GREGORIAN",
             "METHOD:PUBLISH",
-            `X-WR-CALNAME:Расписание ${groupName}`,
+            `X-WR-CALNAME:Расписание ${itemName}`,
             "X-WR-TIMEZONE:Europe/Minsk",
         ];
 
-        for (const item of groupEvents) {
+        for (const item of events) {
             const dateIcs = formatDateForIcs(item.date);
             const timeSlot = parseTimeSlot(item.time);
 
@@ -81,8 +86,14 @@ export async function GET(
             const uid = generateUID(item);
             const summary = escapeIcsText(item.subject);
             const location = item.classroom ? `Ауд. ${escapeIcsText(item.classroom)}` : "";
+
+            // Если тип подписки - преподаватель, в описании показываем группы. И наоборот.
+            const additionalInfo = type === "teacher"
+                ? `Группа: ${item.group}`
+                : `Преподаватель: ${item.teacher}`;
+
             const description = escapeIcsText(
-                `Преподаватель: ${item.teacher}${item.lessonType ? `\nТип: ${item.lessonType}` : ""}`
+                `${additionalInfo}${item.lessonType ? `\nТип: ${item.lessonType}` : ""}`
             );
 
             icsLines.push(
@@ -105,7 +116,7 @@ export async function GET(
 
         // Создаём ASCII-совместимое имя файла
         const safeFilename = "schedule.ics";
-        const encodedFilename = encodeURIComponent(groupName + ".ics");
+        const encodedFilename = encodeURIComponent(itemName + ".ics");
 
         return new NextResponse(icsContent, {
             status: 200,
