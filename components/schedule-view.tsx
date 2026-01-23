@@ -19,6 +19,7 @@ import {
   format,
   startOfWeek,
   addDays,
+  addMonths,
   parse,
   isWithinInterval,
 }
@@ -141,6 +142,38 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
   const [isDesktop, setIsDesktop] = useState(false);
   const [groupComboboxOpen, setGroupComboboxOpen] = useState(false);
   const [teacherComboboxOpen, setTeacherComboboxOpen] = useState(false);
+  const [calendarMonth, setCalendarMonth] = useState<Date>(new Date());
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+
+  // Haptic feedback для PWA
+  const triggerHaptic = () => {
+    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+      navigator.vibrate(10);
+    }
+  };
+
+  // Обработка свайпов для календаря
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart(e.touches[0].clientX);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStart === null) return;
+    const touchEnd = e.changedTouches[0].clientX;
+    const diff = touchStart - touchEnd;
+
+    if (Math.abs(diff) > 50) {
+      triggerHaptic();
+      if (diff > 0) {
+        // Свайп влево - следующий месяц
+        setCalendarMonth(prev => addMonths(prev, 1));
+      } else {
+        // Свайп вправо - предыдущий месяц
+        setCalendarMonth(prev => addMonths(prev, -1));
+      }
+    }
+    setTouchStart(null);
+  };
 
   useEffect(() => {
     const handleResize = () => {
@@ -410,30 +443,95 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
 
         <div className="w-full sm:w-64 space-y-2">
           <label className="text-sm font-medium">Неделя</label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  "w-full justify-between text-left font-normal",
-                  !date && "text-muted-foreground"
-                )}
-              >
-                {format(date, "dd.MM.yyyy")}
-                <CalendarIcon className="h-4 w-4" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-64 p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={date}
-                onSelect={(newDate: Date | undefined) => newDate && setDate(newDate)}
-                initialFocus
-                weekStartsOn={1}
-                locale={ru}
-              />
-            </PopoverContent>
-          </Popover>
+          {/* Мобильная версия - Drawer */}
+          <div className="block sm:hidden">
+            <Drawer>
+              <DrawerTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full justify-between text-left font-normal",
+                    !date && "text-muted-foreground"
+                  )}
+                >
+                  {format(date, "dd.MM.yyyy")}
+                  <CalendarIcon className="h-4 w-4" />
+                </Button>
+              </DrawerTrigger>
+              <DrawerContent>
+                <DrawerHeader>
+                  <DrawerTitle className="text-center">Выберите дату</DrawerTitle>
+                </DrawerHeader>
+                {/* Quick picks */}
+                <div className="flex justify-center gap-2 px-4 pb-4">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setDate(new Date())}
+                    className="flex-1"
+                  >
+                    Сегодня
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setDate(addDays(new Date(), 7))}
+                    className="flex-1"
+                  >
+                    След. неделя
+                  </Button>
+                </div>
+                <div
+                  className="flex justify-center pb-8"
+                  onTouchStart={handleTouchStart}
+                  onTouchEnd={handleTouchEnd}
+                >
+                  <Calendar
+                    mode="single"
+                    selected={date}
+                    month={calendarMonth}
+                    onMonthChange={setCalendarMonth}
+                    onSelect={(newDate: Date | undefined) => {
+                      if (newDate) {
+                        triggerHaptic();
+                        setDate(newDate);
+                      }
+                    }}
+                    weekStartsOn={1}
+                    locale={ru}
+                    className="[--cell-size:3rem] text-base"
+                  />
+                </div>
+              </DrawerContent>
+            </Drawer>
+          </div>
+          {/* Десктопная версия - Popover */}
+          <div className="hidden sm:block">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full justify-between text-left font-normal",
+                    !date && "text-muted-foreground"
+                  )}
+                >
+                  {format(date, "dd.MM.yyyy")}
+                  <CalendarIcon className="h-4 w-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0.5" align="start">
+                <Calendar
+                  mode="single"
+                  selected={date}
+                  onSelect={(newDate: Date | undefined) => newDate && setDate(newDate)}
+                  initialFocus
+                  weekStartsOn={1}
+                  locale={ru}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
         </div>
       </div>
 

@@ -41,11 +41,16 @@ import {
     ArrowUp,
     ArrowDown,
     SlidersHorizontal,
-    Loader2
+    Loader2,
+    History,
+    LayoutDashboard,
+    ShieldCheck,
+    Table2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useState, useMemo, useTransition } from "react";
+import { useState, useMemo, useTransition, useRef } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { parse, isValid } from "date-fns";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
@@ -69,6 +74,314 @@ interface InvisibleRecord {
     item: ScheduleItem;
     index: number;
     reasons: string[];
+}
+
+// Высота строки таблицы для виртуализации
+const ROW_HEIGHT = 36;
+
+interface VirtualizedTableProps {
+    schedule: ScheduleItem[];
+    stats: {
+        invisibleRecords: InvisibleRecord[];
+        total: number;
+    } | null;
+    visibilityFilter: 'all' | 'visible' | 'invisible';
+    sortField: 'group' | 'date' | 'teacher' | 'time' | null;
+    sortDirection: 'asc' | 'desc';
+    setSortField: (field: 'group' | 'date' | 'teacher' | 'time' | null) => void;
+    setSortDirection: (direction: 'asc' | 'desc') => void;
+}
+
+function VirtualizedTable({
+    schedule,
+    stats,
+    visibilityFilter,
+    sortField,
+    sortDirection,
+    setSortField,
+    setSortDirection,
+}: VirtualizedTableProps) {
+    const parentRef = useRef<HTMLDivElement>(null);
+
+    // Подготавливаем данные с индексами и признаком невидимости
+    const tableData = useMemo(() => {
+        let data = schedule.map((item, idx) => ({
+            item,
+            originalIndex: idx + 1,
+            isInvisible: stats?.invisibleRecords.some(r => r.index === idx + 1) || false
+        }));
+
+        // Фильтрация по видимости
+        if (visibilityFilter === 'visible') {
+            data = data.filter(row => !row.isInvisible);
+        } else if (visibilityFilter === 'invisible') {
+            data = data.filter(row => row.isInvisible);
+        }
+
+        // Сортировка
+        if (sortField) {
+            data.sort((a, b) => {
+                if (sortField === 'date') {
+                    const aDate = parse(a.item.date || '', 'dd.MM.yyyy', new Date());
+                    const bDate = parse(b.item.date || '', 'dd.MM.yyyy', new Date());
+                    const aTime = isValid(aDate) ? aDate.getTime() : 0;
+                    const bTime = isValid(bDate) ? bDate.getTime() : 0;
+                    return sortDirection === 'asc' ? aTime - bTime : bTime - aTime;
+                }
+
+                const aVal = (a.item[sortField] || '').toLowerCase();
+                const bVal = (b.item[sortField] || '').toLowerCase();
+
+                if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
+                if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
+                return 0;
+            });
+        }
+
+        return data;
+    }, [schedule, stats, visibilityFilter, sortField, sortDirection]);
+
+    const virtualizer = useVirtualizer({
+        count: tableData.length,
+        getScrollElement: () => parentRef.current,
+        estimateSize: () => ROW_HEIGHT,
+        overscan: 10,
+    });
+
+    const handleSort = (field: 'group' | 'date' | 'teacher' | 'time') => {
+        if (sortField === field) {
+            setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortField(field);
+            setSortDirection('asc');
+        }
+    };
+
+    const SortIcon = ({ field }: { field: 'group' | 'date' | 'teacher' | 'time' }) => {
+        if (sortField === field) {
+            return sortDirection === 'asc'
+                ? <ArrowUp className="h-4 w-4" />
+                : <ArrowDown className="h-4 w-4" />;
+        }
+        return <ArrowUpDown className="h-4 w-4 text-muted-foreground" />;
+    };
+
+    return (
+        <div className="w-full text-sm">
+            {/* Заголовок таблицы */}
+            <div className="flex border-b bg-background sticky top-0 z-10">
+                <div className="p-2 w-12 shrink-0">#</div>
+                <div
+                    className="p-2 w-32 shrink-0 cursor-pointer hover:bg-muted/50 select-none"
+                    onClick={() => handleSort('group')}
+                >
+                    <div className="flex items-center gap-1">
+                        Группа
+                        <SortIcon field="group" />
+                    </div>
+                </div>
+                <div
+                    className="p-2 w-24 shrink-0 cursor-pointer hover:bg-muted/50 select-none"
+                    onClick={() => handleSort('date')}
+                >
+                    <div className="flex items-center gap-1">
+                        Дата
+                        <SortIcon field="date" />
+                    </div>
+                </div>
+                <div className="p-2 w-16 shrink-0">День</div>
+                <div
+                    className="p-2 w-28 shrink-0 cursor-pointer hover:bg-muted/50 select-none"
+                    onClick={() => handleSort('time')}
+                >
+                    <div className="flex items-center gap-1">
+                        Время
+                        <SortIcon field="time" />
+                    </div>
+                </div>
+                <div className="p-2 flex-1 min-w-40">Дисциплина</div>
+                <div
+                    className="p-2 w-40 shrink-0 cursor-pointer hover:bg-muted/50 select-none"
+                    onClick={() => handleSort('teacher')}
+                >
+                    <div className="flex items-center gap-1">
+                        Преподаватель
+                        <SortIcon field="teacher" />
+                    </div>
+                </div>
+                <div className="p-2 w-16 shrink-0">Ауд.</div>
+                <div className="p-2 w-16 shrink-0 text-center flex items-center justify-center">
+                    <Eye className="h-4 w-4" />
+                </div>
+            </div>
+
+            {/* Виртуализированный контейнер */}
+            <div
+                ref={parentRef}
+                className="h-[calc(100vh-320px)] overflow-auto"
+            >
+                <div
+                    style={{
+                        height: `${virtualizer.getTotalSize()}px`,
+                        width: '100%',
+                        position: 'relative',
+                    }}
+                >
+                    {virtualizer.getVirtualItems().map((virtualRow) => {
+                        const { item, originalIndex, isInvisible } = tableData[virtualRow.index];
+                        return (
+                            <div
+                                key={originalIndex}
+                                className={`flex border-b hover:bg-muted/50 absolute top-0 left-0 w-full ${isInvisible ? 'bg-red-50 dark:bg-red-950/20' : ''}`}
+                                style={{
+                                    height: `${virtualRow.size}px`,
+                                    transform: `translateY(${virtualRow.start}px)`,
+                                }}
+                            >
+                                <div className="p-2 w-12 shrink-0 text-muted-foreground">{originalIndex}</div>
+                                <div className="p-2 w-32 shrink-0 truncate">{item.group || <span className="text-red-500">—</span>}</div>
+                                <div className="p-2 w-24 shrink-0">{item.date || <span className="text-red-500">—</span>}</div>
+                                <div className="p-2 w-16 shrink-0">{item.dayOfWeek || <span className="text-red-500">—</span>}</div>
+                                <div className={`p-2 w-28 shrink-0 ${!VALID_TIME_SLOTS.includes(item.time) ? 'text-red-600 font-semibold' : ''}`}>
+                                    {item.time || <span className="text-red-500">—</span>}
+                                </div>
+                                <div className="p-2 flex-1 min-w-40 truncate">{item.subject || <span className="text-red-500">—</span>}</div>
+                                <div className="p-2 w-40 shrink-0 truncate">{item.teacher || <span className="text-red-500">—</span>}</div>
+                                <div className="p-2 w-16 shrink-0">{item.classroom || <span className="text-red-500">—</span>}</div>
+                                <div className="p-2 w-12 shrink-0 flex items-center justify-center">
+                                    {isInvisible ? (
+                                        <EyeOff className="h-4 w-4 text-red-500" />
+                                    ) : (
+                                        <Eye className="h-4 w-4 text-green-500" />
+                                    )}
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// Компонент для отображения Changelog
+function ChangelogContent() {
+    const { data, error, isLoading } = useSWR<{ content: string }>('/api/changelog', fetcher);
+
+    if (isLoading) {
+        return (
+            <Card>
+                <CardContent className="pt-6 space-y-4">
+                    <Skeleton className="h-8 w-64" />
+                    <div className="space-y-3">
+                        <Skeleton className="h-5 w-32" />
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-3/4" />
+                    </div>
+                </CardContent>
+            </Card>
+        );
+    }
+
+    if (error) {
+        return (
+            <Card className="border-destructive">
+                <CardContent className="pt-6 flex items-center gap-2 text-destructive">
+                    <XCircle className="h-4 w-4" />
+                    Ошибка загрузки истории версий
+                </CardContent>
+            </Card>
+        );
+    }
+
+    // Парсинг и рендер в стиле shadcn/ui
+    const renderChangelog = (content: string) => {
+        const lines = content.split('\n');
+        const elements: React.ReactNode[] = [];
+
+        lines.forEach((line, i) => {
+            // Главный заголовок - пропускаем, он в CardHeader
+            if (line.startsWith('# ')) {
+                return;
+            }
+
+            // Дата версии (## 23 января 2026)
+            if (line.startsWith('## ')) {
+                elements.push(
+                    <div key={i} className="flex items-center gap-3 mt-6 first:mt-0 mb-4">
+                        <CalendarDays className="h-5 w-5 text-primary" />
+                        <span className="text-lg font-semibold">{line.slice(3)}</span>
+                    </div>
+                );
+                return;
+            }
+
+            // Категория (### Добавлено, ### Улучшено и т.д.)
+            if (line.startsWith('### ')) {
+                const category = line.slice(4);
+                let variant: "default" | "secondary" | "destructive" | "outline" = "default";
+                let icon = <CheckCircle className="h-3 w-3" />;
+
+                if (category.includes('Добавлено')) {
+                    variant = "default";
+                    icon = <CheckCircle className="h-3 w-3" />;
+                } else if (category.includes('Улучшено') || category.includes('Обновлено')) {
+                    variant = "secondary";
+                    icon = <ArrowUp className="h-3 w-3" />;
+                } else if (category.includes('Удалено')) {
+                    variant = "destructive";
+                    icon = <XCircle className="h-3 w-3" />;
+                } else if (category.includes('Исправлено')) {
+                    variant = "outline";
+                    icon = <CheckCircle className="h-3 w-3" />;
+                }
+
+                elements.push(
+                    <Badge key={i} variant={variant} className="mt-4 mb-2 gap-1">
+                        {icon}
+                        {category}
+                    </Badge>
+                );
+                return;
+            }
+
+            // Элемент списка
+            if (line.startsWith('- ')) {
+                elements.push(
+                    <div key={i} className="flex items-start gap-2 ml-1 py-1">
+                        <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground mt-2 shrink-0" />
+                        <span className="text-sm text-muted-foreground">{line.slice(2)}</span>
+                    </div>
+                );
+                return;
+            }
+
+            // Разделитель
+            if (line.startsWith('---')) {
+                elements.push(<Separator key={i} className="my-6" />);
+                return;
+            }
+        });
+
+        return elements;
+    };
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                    <History className="h-5 w-5" />
+                    История изменений
+                </CardTitle>
+                <CardDescription>
+                    Что нового в приложении
+                </CardDescription>
+            </CardHeader>
+            <CardContent className="max-h-[calc(100vh-300px)] overflow-y-auto">
+                {data?.content && renderChangelog(data.content)}
+            </CardContent>
+        </Card>
+    );
 }
 
 export default function DebugPage() {
@@ -279,10 +592,23 @@ export default function DebugPage() {
             </div>
 
             <Tabs defaultValue="overview" className="space-y-6">
-                <TabsList className="grid grid-cols-3 max-w-md mx-auto">
-                    <TabsTrigger value="overview">Обзор</TabsTrigger>
-                    <TabsTrigger value="checks">Проверки</TabsTrigger>
-                    <TabsTrigger value="details">Детали</TabsTrigger>
+                <TabsList className="grid grid-cols-4 max-w-xl mx-auto">
+                    <TabsTrigger value="overview" className="flex items-center gap-1.5">
+                        <LayoutDashboard className="h-3.5 w-3.5" />
+                        Обзор
+                    </TabsTrigger>
+                    <TabsTrigger value="checks" className="flex items-center gap-1.5">
+                        <ShieldCheck className="h-3.5 w-3.5" />
+                        Проверки
+                    </TabsTrigger>
+                    <TabsTrigger value="details" className="flex items-center gap-1.5">
+                        <Table2 className="h-3.5 w-3.5" />
+                        Детали
+                    </TabsTrigger>
+                    <TabsTrigger value="history" className="flex items-center gap-1.5">
+                        <History className="h-3.5 w-3.5" />
+                        История
+                    </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="overview" className="space-y-6">
@@ -701,165 +1027,15 @@ export default function DebugPage() {
                                         ))}
                                     </div>
                                 ) : (
-                                    <div className="max-h-[calc(100vh-280px)] overflow-y-auto">
-                                        <table className="w-full text-sm">
-                                            <thead className="sticky top-0 bg-background z-10">
-                                                <tr className="border-b">
-                                                    <th className="text-left p-2">#</th>
-                                                    <th
-                                                        className="text-left p-2 cursor-pointer hover:bg-muted/50 select-none"
-                                                        onClick={() => {
-                                                            if (sortField === 'group') {
-                                                                setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-                                                            } else {
-                                                                setSortField('group');
-                                                                setSortDirection('asc');
-                                                            }
-                                                        }}
-                                                    >
-                                                        <div className="flex items-center gap-1">
-                                                            Группа
-                                                            {sortField === 'group' ? (
-                                                                sortDirection === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
-                                                            ) : (
-                                                                <ArrowUpDown className="h-3 w-3 text-muted-foreground" />
-                                                            )}
-                                                        </div>
-                                                    </th>
-                                                    <th
-                                                        className="text-left p-2 cursor-pointer hover:bg-muted/50 select-none"
-                                                        onClick={() => {
-                                                            if (sortField === 'date') {
-                                                                setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-                                                            } else {
-                                                                setSortField('date');
-                                                                setSortDirection('asc');
-                                                            }
-                                                        }}
-                                                    >
-                                                        <div className="flex items-center gap-1">
-                                                            Дата
-                                                            {sortField === 'date' ? (
-                                                                sortDirection === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
-                                                            ) : (
-                                                                <ArrowUpDown className="h-3 w-3 text-muted-foreground" />
-                                                            )}
-                                                        </div>
-                                                    </th>
-                                                    <th className="text-left p-2">День</th>
-                                                    <th
-                                                        className="text-left p-2 cursor-pointer hover:bg-muted/50 select-none"
-                                                        onClick={() => {
-                                                            if (sortField === 'time') {
-                                                                setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-                                                            } else {
-                                                                setSortField('time');
-                                                                setSortDirection('asc');
-                                                            }
-                                                        }}
-                                                    >
-                                                        <div className="flex items-center gap-1">
-                                                            Время
-                                                            {sortField === 'time' ? (
-                                                                sortDirection === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
-                                                            ) : (
-                                                                <ArrowUpDown className="h-3 w-3 text-muted-foreground" />
-                                                            )}
-                                                        </div>
-                                                    </th>
-                                                    <th className="text-left p-2">Дисциплина</th>
-                                                    <th
-                                                        className="text-left p-2 cursor-pointer hover:bg-muted/50 select-none"
-                                                        onClick={() => {
-                                                            if (sortField === 'teacher') {
-                                                                setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-                                                            } else {
-                                                                setSortField('teacher');
-                                                                setSortDirection('asc');
-                                                            }
-                                                        }}
-                                                    >
-                                                        <div className="flex items-center gap-1">
-                                                            Преподаватель
-                                                            {sortField === 'teacher' ? (
-                                                                sortDirection === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
-                                                            ) : (
-                                                                <ArrowUpDown className="h-3 w-3 text-muted-foreground" />
-                                                            )}
-                                                        </div>
-                                                    </th>
-                                                    <th className="text-left p-2">Ауд.</th>
-                                                    <th className="text-center p-2">Видимость</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {(() => {
-                                                    // Подготавливаем данные с индексами и признаком невидимости
-                                                    let tableData = schedule?.map((item, idx) => ({
-                                                        item,
-                                                        originalIndex: idx + 1,
-                                                        isInvisible: stats?.invisibleRecords.some(r => r.index === idx + 1) || false
-                                                    })) || [];
-
-                                                    // Фильтрация по видимости
-                                                    if (visibilityFilter === 'visible') {
-                                                        tableData = tableData.filter(row => !row.isInvisible);
-                                                    } else if (visibilityFilter === 'invisible') {
-                                                        tableData = tableData.filter(row => row.isInvisible);
-                                                    }
-
-                                                    // Сортировка
-                                                    if (sortField) {
-                                                        tableData.sort((a, b) => {
-                                                            let aVal = '';
-                                                            let bVal = '';
-
-                                                            if (sortField === 'date') {
-                                                                // Сортировка по дате — парсим dd.MM.yyyy
-                                                                const aDate = parse(a.item.date || '', 'dd.MM.yyyy', new Date());
-                                                                const bDate = parse(b.item.date || '', 'dd.MM.yyyy', new Date());
-                                                                const aTime = isValid(aDate) ? aDate.getTime() : 0;
-                                                                const bTime = isValid(bDate) ? bDate.getTime() : 0;
-                                                                return sortDirection === 'asc' ? aTime - bTime : bTime - aTime;
-                                                            }
-
-                                                            aVal = (a.item[sortField] || '').toLowerCase();
-                                                            bVal = (b.item[sortField] || '').toLowerCase();
-
-                                                            if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
-                                                            if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
-                                                            return 0;
-                                                        });
-                                                    }
-
-                                                    return tableData.map(({ item, originalIndex, isInvisible }) => (
-                                                        <tr
-                                                            key={originalIndex}
-                                                            className={`border-b hover:bg-muted/50 ${isInvisible ? 'bg-red-50 dark:bg-red-950/20' : ''}`}
-                                                        >
-                                                            <td className="p-2 text-muted-foreground">{originalIndex}</td>
-                                                            <td className="p-2">{item.group || <span className="text-red-500">—</span>}</td>
-                                                            <td className="p-2">{item.date || <span className="text-red-500">—</span>}</td>
-                                                            <td className="p-2">{item.dayOfWeek || <span className="text-red-500">—</span>}</td>
-                                                            <td className={`p-2 ${!VALID_TIME_SLOTS.includes(item.time) ? 'text-red-600 font-semibold' : ''}`}>
-                                                                {item.time || <span className="text-red-500">—</span>}
-                                                            </td>
-                                                            <td className="p-2 truncate max-w-40">{item.subject || <span className="text-red-500">—</span>}</td>
-                                                            <td className="p-2 truncate max-w-40">{item.teacher || <span className="text-red-500">—</span>}</td>
-                                                            <td className="p-2">{item.classroom || <span className="text-red-500">—</span>}</td>
-                                                            <td className="p-2 text-center">
-                                                                {isInvisible ? (
-                                                                    <EyeOff className="h-4 w-4 text-red-500 mx-auto" />
-                                                                ) : (
-                                                                    <Eye className="h-4 w-4 text-green-500 mx-auto" />
-                                                                )}
-                                                            </td>
-                                                        </tr>
-                                                    ));
-                                                })()}
-                                            </tbody>
-                                        </table>
-                                    </div>
+                                    <VirtualizedTable
+                                        schedule={schedule || []}
+                                        stats={stats}
+                                        visibilityFilter={visibilityFilter}
+                                        sortField={sortField}
+                                        sortDirection={sortDirection}
+                                        setSortField={setSortField}
+                                        setSortDirection={setSortDirection}
+                                    />
                                 )}
                                 {visibilityFilter !== 'all' && (
                                     <p className="text-sm text-muted-foreground mt-2">
@@ -869,6 +1045,10 @@ export default function DebugPage() {
                             </CardContent>
                         )}
                     </Card>
+                </TabsContent>
+
+                <TabsContent value="history" className="space-y-6">
+                    <ChangelogContent />
                 </TabsContent>
             </Tabs>
         </div>
