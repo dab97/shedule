@@ -40,10 +40,11 @@ function escapeIcsText(text: string): string {
 
 export async function GET(
     request: NextRequest,
-    { params }: { params: { group: string } }
+    context: { params: Promise<{ group: string }> }
 ) {
     try {
-        const groupName = decodeURIComponent(params.group);
+        const { group } = await context.params;
+        const groupName = decodeURIComponent(group);
 
         // Загрузка данных расписания
         const schedule = await loadSchedule();
