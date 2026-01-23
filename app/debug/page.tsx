@@ -980,7 +980,7 @@ export default function DebugPage() {
                                             <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
                                             <Select
                                                 value={visibilityFilter}
-                                                onValueChange={(value) => setVisibilityFilter(value as 'all' | 'visible' | 'invisible')}
+                                                onValueChange={(value: string) => setVisibilityFilter(value as 'all' | 'visible' | 'invisible')}
                                             >
                                                 <SelectTrigger className="w-[180px] h-8 text-sm">
                                                     <SelectValue placeholder="Все записи" />
