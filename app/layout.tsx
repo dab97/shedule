@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ThemeProvider } from "next-themes";
@@ -29,6 +29,13 @@ const evolventaBold = localFont({
   weight: "700",
 });
 
+// Настройки вьюпорта и темы
+export const viewport: Viewport = {
+  themeColor: "#1e40af",
+  width: "device-width",
+  initialScale: 1,
+};
+
 export const metadata: Metadata = {
   title: "Расписание занятий РГСУ | Филиал в Минске",
   description: "Актуальное расписание занятий Филиала РГСУ в г. Минске на 2025-2026 учебный год. Поиск по группам, преподавателям и датам. Экспорт в PDF.",
@@ -45,7 +52,7 @@ export const metadata: Metadata = {
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
-    statusBarStyle: 'default',
+    statusBarStyle: 'black-translucent',
     title: 'Расписание РГСУ',
   },
   formatDetection: {
