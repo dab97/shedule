@@ -33,7 +33,8 @@
     "types": [
       "node",
       "react",
-      "react-dom"
+      "react-dom",
+      "jest"
     ],
     "target": "ES2017"
   },

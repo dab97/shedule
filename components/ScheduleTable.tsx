@@ -2,8 +2,13 @@
 
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { ScheduleItem } from "@/types/schedule";
+import {
+  DAYS_ORDER,
+  PAGE_SIZE_OPTIONS,
+  DEFAULT_PAGE_SIZE,
+  TABLE_COLUMNS
+} from "@/lib/constants";
 import { FileDown, ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, SearchX, Check, ChevronsUpDown } from "lucide-react";
-
 import {
   Table,
   TableBody,
@@ -45,19 +50,6 @@ interface ScheduleTableProps {
 type SortField = keyof ScheduleItem;
 type SortDirection = "asc" | "desc" | null;
 
-const PAGE_SIZE_OPTIONS = [10, 25, 50] as const;
-const DEFAULT_PAGE_SIZE = 15;
-const columns: { key: SortField; label: string; className?: string }[] = [
-  { key: "group", label: "Группа", className: "w-40" },
-  { key: "dayOfWeek", label: "День недели" },
-  { key: "date", label: "Дата" },
-  { key: "time", label: "Время", className: "w-28" },
-  { key: "subject", label: "Дисциплина" },
-  { key: "lessonType", label: "Вид занятия" },
-  { key: "teacher", label: "Преподаватель" },
-  { key: "classroom", label: "Аудитория" },
-];
-
 export default function ScheduleTable({ scheduleData, isLoading = false }: ScheduleTableProps) {
   const [filter, setFilter] = useState("");
   const [filterType, setFilterType] = useState("teacher");
@@ -78,7 +70,14 @@ export default function ScheduleTable({ scheduleData, isLoading = false }: Sched
     });
 
     return Array.from(uniqueValues)
-      .sort((a, b) => a.localeCompare(b, "ru"))
+      .sort((a, b) => {
+        if (filterType === "dayOfWeek") {
+          const aLower = a.toLowerCase();
+          const bLower = b.toLowerCase();
+          return (DAYS_ORDER[aLower] || 99) - (DAYS_ORDER[bLower] || 99);
+        }
+        return a.localeCompare(b, "ru");
+      })
       .map((value) => ({ value: value.toLowerCase(), label: value }));
   }, [scheduleData, filterType]);
 
@@ -91,7 +90,7 @@ export default function ScheduleTable({ scheduleData, isLoading = false }: Sched
     return scheduleData.filter((item) => {
       // Поиск по всем полям
       if (filterType === "all") {
-        return columns.some((col) => {
+        return TABLE_COLUMNS.some((col) => {
           const value = item[col.key];
           return value && String(value).toLowerCase().includes(searchLower);
         });
@@ -132,6 +131,13 @@ export default function ScheduleTable({ scheduleData, isLoading = false }: Sched
         const aTime = parseTime(String(aValue));
         const bTime = parseTime(String(bValue));
         return sortDirection === "asc" ? aTime - bTime : bTime - aTime;
+      }
+
+      // Специальная сортировка для дней недели
+      if (sortField === "dayOfWeek") {
+        const aOrder = DAYS_ORDER[String(aValue).toLowerCase()] || 99;
+        const bOrder = DAYS_ORDER[String(bValue).toLowerCase()] || 99;
+        return sortDirection === "asc" ? aOrder - bOrder : bOrder - aOrder;
       }
 
       // Строковая сортировка для остальных полей
@@ -208,9 +214,9 @@ export default function ScheduleTable({ scheduleData, isLoading = false }: Sched
 
     autoTable(doc, {
       margin: 8,
-      head: [columns.map((col) => col.label)],
+      head: [TABLE_COLUMNS.map((col) => col.label)],
       body: sortedData.map((item) =>
-        columns.map((col) => item[col.key] ?? "")
+        TABLE_COLUMNS.map((col) => item[col.key] ?? "")
       ),
       rowPageBreak: "auto",
       styles: { font: "Roboto", fontSize: 8 },
@@ -249,10 +255,11 @@ export default function ScheduleTable({ scheduleData, isLoading = false }: Sched
       <div className="flex flex-wrap gap-4 mb-4">
         <Select
           value={filterType}
-          onValueChange={(value) => {
+          onValueChange={(value: string) => {
             setFilterType(value);
             setFilter("");
           }}
+          modal={false}
         >
           <SelectTrigger className="max-w-40 order-first">
             <SelectValue placeholder="Выберите тип фильтра" />
@@ -267,7 +274,7 @@ export default function ScheduleTable({ scheduleData, isLoading = false }: Sched
           </SelectContent>
         </Select>
         {/* Комбобокс с автодополнением */}
-        <Popover open={comboboxOpen} onOpenChange={setComboboxOpen}>
+        <Popover open={comboboxOpen} onOpenChange={setComboboxOpen} modal={false}>
           <PopoverTrigger asChild>
             <Button
               variant="outline"
@@ -335,10 +342,10 @@ export default function ScheduleTable({ scheduleData, isLoading = false }: Sched
         <Table>
           <TableHeader className="text-center bg-slate-100 dark:bg-gray-900">
             <TableRow className="text-center">
-              {columns.map((col, idx) => (
+              {TABLE_COLUMNS.map((col, idx) => (
                 <TableHead
                   key={col.key}
-                  className={`${idx < columns.length - 1 ? "border-r" : ""} text-center cursor-pointer hover:bg-slate-200 dark:hover:bg-gray-800 transition-colors select-none`}
+                  className={`${idx < TABLE_COLUMNS.length - 1 ? "border-r" : ""} text-center cursor-pointer hover:bg-slate-200 dark:hover:bg-gray-800 transition-colors select-none`}
                   onClick={() => handleSort(col.key)}
                 >
                   <div className="flex items-center justify-center">
@@ -354,10 +361,10 @@ export default function ScheduleTable({ scheduleData, isLoading = false }: Sched
             {isLoading ? (
               Array.from({ length: itemsPerPage }).map((_, index) => (
                 <TableRow key={`skeleton-${index}`}>
-                  {columns.map((col, colIdx) => (
+                  {TABLE_COLUMNS.map((col, colIdx) => (
                     <TableCell
                       key={col.key}
-                      className={colIdx < columns.length - 1 ? "border-r" : ""}
+                      className={colIdx < TABLE_COLUMNS.length - 1 ? "border-r" : ""}
                     >
                       <Skeleton className="h-5 w-full" />
                     </TableCell>
@@ -379,7 +386,7 @@ export default function ScheduleTable({ scheduleData, isLoading = false }: Sched
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-48">
+                <TableCell colSpan={TABLE_COLUMNS.length} className="h-48">
                   <div className="flex flex-col items-center justify-center gap-4 text-muted-foreground">
                     <SearchX className="h-12 w-12 opacity-50" />
                     <div className="text-center">
@@ -406,7 +413,7 @@ export default function ScheduleTable({ scheduleData, isLoading = false }: Sched
           </span>
           <div className="flex items-center gap-2">
             <span>Строк:</span>
-            <Select value={String(itemsPerPage)} onValueChange={handlePageSizeChange}>
+            <Select value={String(itemsPerPage)} onValueChange={(value: string) => handlePageSizeChange(value)} modal={false}>
               <SelectTrigger className="w-20 h-8">
                 <SelectValue />
               </SelectTrigger>

@@ -5,11 +5,13 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Drawer,
   DrawerContent,
+  DrawerDescription,
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
@@ -40,7 +42,7 @@ import {
   Link,
   Plus,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, getDeclension } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -63,39 +65,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-// import { ScheduleItem } from '@/utils/loadSchedule';
 import { ScheduleItem } from "@/types/schedule";
-
-function getDeclension(number: number, forms: string[]): string {
-  const cases = [2, 0, 1, 1, 1, 2];
-  return forms[
-    number % 100 > 4 && number % 100 < 20
-      ? 2
-      : cases[number % 10 < 5 ? number % 10 : 5]
-  ];
-}
-
-export { getDeclension };
-
-const daysOfWeek = [
-  { id: "monday", label: "Пн" },
-  { id: "tuesday", label: "Вт" },
-  { id: "wednesday", label: "Ср" },
-  { id: "thursday", label: "Чт" },
-  { id: "friday", label: "Пт" },
-  { id: "saturday", label: "Сб" },
-];
-
-const timeSlots = [
-  "08.30 - 10.00",
-  "10.10 - 11.40",
-  "12.10 - 13.40",
-  "13.50 - 15.20",
-  "15.30 - 17.00",
-  "17.10 - 18.40",
-  "18.50 - 20.20",
-  "20.30 - 22.00",
-];
+import {
+  DAYS_OF_WEEK,
+  TIME_SLOTS,
+  DATE_FORMATS,
+  STORAGE_KEYS,
+  BREAKPOINTS,
+  API_ENDPOINTS
+} from "@/lib/constants";
 
 type ScheduleViewProps = {
   scheduleData: ScheduleItem[];
@@ -177,7 +155,7 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
 
   useEffect(() => {
     const handleResize = () => {
-      setIsDesktop(window.innerWidth >= 640); // Tailwind's 'sm' breakpoint
+      setIsDesktop(window.innerWidth >= BREAKPOINTS.SM); // Tailwind's 'sm' breakpoint
     };
     handleResize(); // Set initial value
     window.addEventListener("resize", handleResize);
@@ -186,8 +164,8 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
 
   const handleSaveGroup = () => {
     if (typeof window !== "undefined") {
-      localStorage.setItem("selectedGroup", selectedGroup);
-      localStorage.setItem("selectedTeacher", "all");
+      localStorage.setItem(STORAGE_KEYS.SELECTED_GROUP, selectedGroup);
+      localStorage.setItem(STORAGE_KEYS.SELECTED_TEACHER, "all");
       setSelectedTeacher("all");
       showToast({
         title: `Группа "${selectedGroup}" сохранена!`,
@@ -199,8 +177,8 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
 
   const handleSaveTeacher = () => {
     if (typeof window !== "undefined") {
-      localStorage.setItem("selectedTeacher", selectedTeacher);
-      localStorage.setItem("selectedGroup", "all");
+      localStorage.setItem(STORAGE_KEYS.SELECTED_TEACHER, selectedTeacher);
+      localStorage.setItem(STORAGE_KEYS.SELECTED_GROUP, "all");
       setSelectedGroup("all");
       showToast({
         title: `Преподаватель "${selectedTeacher}" сохранён!`,
@@ -218,11 +196,11 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
 
   const daysWithDates = useMemo(() => {
     const { start } = getCurrentWeekDates();
-    return daysOfWeek.map((day, index) => {
+    return DAYS_OF_WEEK.map((day, index) => {
       const currentDay = addDays(start, index);
       return {
         ...day,
-        date: format(currentDay, "dd.MM"),
+        date: format(currentDay, DATE_FORMATS.SHORT),
       };
     });
   }, [date]);
@@ -253,8 +231,8 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
 
   useEffect(() => {
     if (typeof window !== "undefined" && scheduleData.length > 0) {
-      const storedGroup = localStorage.getItem("selectedGroup");
-      const storedTeacher = localStorage.getItem("selectedTeacher");
+      const storedGroup = localStorage.getItem(STORAGE_KEYS.SELECTED_GROUP);
+      const storedTeacher = localStorage.getItem(STORAGE_KEYS.SELECTED_TEACHER);
 
       if (storedGroup && (uniqueGroups.includes(storedGroup) || storedGroup === "all")) {
         setSelectedGroup(storedGroup);
@@ -275,7 +253,7 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
       <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
         <div className="w-full sm:w-56 space-y-2">
           <label className="text-sm font-medium">Группа</label>
-          <Popover open={groupComboboxOpen} onOpenChange={setGroupComboboxOpen}>
+          <Popover open={groupComboboxOpen} onOpenChange={setGroupComboboxOpen} modal={false}>
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
@@ -338,7 +316,7 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
             <Button onClick={handleSaveGroup} className="w-full mt-2">Моя группа</Button>
           )}
           {selectedGroup !== "all" && (
-            <Popover>
+            <Popover modal={false}>
               <PopoverTrigger asChild>
                 <Button variant="outline" className="w-full mt-2">
                   <CalendarSync className="h-4 w-4" />
@@ -350,13 +328,13 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
                   <p className="text-sm font-medium">Ссылка для подписки:</p>
                   <div className="flex items-center gap-2">
                     <code className="flex-1 text-xs bg-muted p-2 rounded truncate">
-                      {typeof window !== 'undefined' ? `${window.location.origin}/api/calendar/${encodeURIComponent(selectedGroup)}` : ''}
+                      {typeof window !== 'undefined' ? `${window.location.origin}${API_ENDPOINTS.CALENDAR}${encodeURIComponent(selectedGroup)}` : ''}
                     </code>
                     <Button
                       size="icon"
                       variant="outline"
                       onClick={() => {
-                        navigator.clipboard.writeText(`${window.location.origin}/api/calendar/${encodeURIComponent(selectedGroup)}`);
+                        navigator.clipboard.writeText(`${window.location.origin}${API_ENDPOINTS.CALENDAR}${encodeURIComponent(selectedGroup)}`);
                         showToast({ title: "Готово!", message: "Ссылка скопирована в буфер обмена", variant: "success" });
                       }}
                     >
@@ -377,7 +355,7 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
 
         <div className="w-full sm:w-80 space-y-2">
           <label className="text-sm font-medium">Преподаватель</label>
-          <Popover open={teacherComboboxOpen} onOpenChange={setTeacherComboboxOpen}>
+          <Popover open={teacherComboboxOpen} onOpenChange={setTeacherComboboxOpen} modal={false}>
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
@@ -445,7 +423,7 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
           <label className="text-sm font-medium">Неделя</label>
           {/* Мобильная версия - Drawer */}
           <div className="block sm:hidden">
-            <Drawer>
+            <Drawer shouldScaleBackground={false} modal={false}>
               <DrawerTrigger asChild>
                 <Button
                   variant="outline"
@@ -461,6 +439,9 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
               <DrawerContent>
                 <DrawerHeader>
                   <DrawerTitle className="text-center">Выберите дату</DrawerTitle>
+                  <DrawerDescription className="sr-only">
+                    Выберите дату в календаре для просмотра расписания на эту неделю
+                  </DrawerDescription>
                 </DrawerHeader>
                 {/* Quick picks */}
                 <div className="flex justify-center gap-2 px-4 pb-4">
@@ -500,6 +481,7 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
                     weekStartsOn={1}
                     locale={ru}
                     className="[--cell-size:3rem] text-base"
+                    initialFocus
                   />
                 </div>
               </DrawerContent>
@@ -507,7 +489,7 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
           </div>
           {/* Десктопная версия - Popover */}
           <div className="hidden sm:block">
-            <Popover>
+            <Popover modal={false}>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
@@ -545,7 +527,7 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
       <div className="block sm:hidden space-y-6">
         {daysWithDates.map((day) => {
           // Проверяем, есть ли занятия в этот день на текущей неделе
-          const hasLessons = timeSlots.some((timeSlot) =>
+          const hasLessons = TIME_SLOTS.some((timeSlot) =>
             filteredData.some(
               (item) =>
                 item.time === timeSlot &&
@@ -569,7 +551,7 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
               <div className="border  text-center p-4 rounded-lg font-semibold bg-slate-100 dark:bg-gray-900">
                 {day.label} ({day.date})
               </div>
-              {timeSlots.map((timeSlot) => {
+              {TIME_SLOTS.map((timeSlot) => {
                 const lessons = filteredData.filter(
                   (item) =>
                     item.time === timeSlot &&
@@ -586,11 +568,19 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
                 );
 
                 return lessons.length > 0 ? (
-                  <Drawer key={`${day.label}-${day.date}-${timeSlot}`}>
+                  <Drawer key={`${day.label}-${day.date}-${timeSlot}`} shouldScaleBackground={false}>
                     <DrawerTrigger asChild>
                       <div
-                        className="p-3 border rounded-lg flex flex-col justify-between cursor-pointer"
+                        className="p-3 border rounded-lg flex flex-col justify-between cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         onClick={() => handleLessonClick(lessons[0])}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            handleLessonClick(lessons[0]);
+                          }
+                        }}
                       >
                         <div className="space-y-1 leading-relaxed">
                           <div className="font-semibold text-sm">
@@ -643,6 +633,9 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
                           <DrawerTitle className="text-center font-semibold text-base mt-4">
                             {lessons[0].subject}
                           </DrawerTitle>
+                          <DrawerDescription className="sr-only">
+                            Детальная информация о занятии: время, аудитория и преподаватель
+                          </DrawerDescription>
                         </DrawerHeader>
                         {lessons.map((lesson, lessonIndex) => (
                           <div
@@ -730,7 +723,7 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
           ))}
         </div>
 
-        {timeSlots.map((timeSlot) => (
+        {TIME_SLOTS.map((timeSlot) => (
           <div
             key={timeSlot}
             className="grid grid-cols-1 md:grid-cols-[repeat(7,minmax(200px,1fr))] gap-4"
@@ -739,7 +732,7 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
               {timeSlot}
             </div>
 
-            {daysOfWeek.map((day, index) => {
+            {DAYS_OF_WEEK.map((day, index) => {
               const lessons = filteredData.filter(
                 (item) =>
                   item.time === timeSlot &&
@@ -756,8 +749,16 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
                 <Dialog key={`${day.id}-${timeSlot}`}>
                   <DialogTrigger asChild>
                     <div
-                      className="p-3 border rounded-lg flex flex-col justify-between h-full cursor-pointer"
+                      className="p-3 border rounded-lg flex flex-col justify-between h-full cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       onClick={() => handleLessonClick(lessons[0])}
+                      role="button"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          handleLessonClick(lessons[0]);
+                        }
+                      }}
                     >
                       <div className="space-y-1 leading-relaxed">
                         <div className="font-semibold text-sm">
@@ -802,6 +803,9 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
                         <DialogTitle className="text-center text-base font-semibold mt-6">
                           {lessons[0].subject}
                         </DialogTitle>
+                        <DialogDescription className="sr-only">
+                          Детальная информация о занятии
+                        </DialogDescription>
                       </DialogHeader>
                       {lessons.map((lesson, lessonIndex) => (
                         <div

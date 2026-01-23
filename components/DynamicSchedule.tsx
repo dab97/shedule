@@ -6,8 +6,11 @@ import { ScheduleItem } from "@/types/schedule";
 import { ScheduleTabs } from "@/components/schedule-tabs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { showScheduleToast, showToast } from "@/components/ui/sonner";
+import { AlertCircle, RefreshCcw } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { API_ENDPOINTS, REFRESH_INTERVAL } from "@/lib/constants";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -151,8 +154,9 @@ export default function Home() {
     data: schedule,
     error,
     isLoading,
-  } = useSWR<ScheduleItem[]>("/api/schedule/", fetcher, {
-    refreshInterval: 60000, // Обновляем каждую минуту
+    mutate,
+  } = useSWR<ScheduleItem[]>(API_ENDPOINTS.SCHEDULE, fetcher, {
+    refreshInterval: REFRESH_INTERVAL, // Обновляем каждую минуту
   });
 
   const previousDataRef = useRef<ScheduleItem[] | null>(null);
@@ -181,13 +185,35 @@ export default function Home() {
   // Отображаем ошибку, если есть
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Alert variant="destructive" className="max-w-sm">
-          <AlertTitle>Ошибка загрузки расписания</AlertTitle>
-          <AlertDescription>
-            Не удалось загрузить расписание занятий.
-          </AlertDescription>
-        </Alert>
+      <div className="flex items-center justify-center min-h-screen bg-background p-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="w-full max-w-md"
+        >
+          <Alert variant="destructive" className="flex flex-col items-center text-center p-6 space-y-4 border-2">
+            <div className="p-3 bg-destructive/10 rounded-full">
+              <AlertCircle className="h-10 w-10 text-destructive" />
+            </div>
+            <div className="space-y-2">
+              <AlertTitle className="text-xl font-bold tracking-tight">
+                Ошибка загрузки расписания
+              </AlertTitle>
+              <AlertDescription className="text-sm opacity-90 leading-relaxed">
+                Не удалось загрузить данные. Проверьте подключение к интернету или попробуйте позже.
+              </AlertDescription>
+            </div>
+            <Button
+              variant="outline"
+              size="lg"
+              className="mt-4 w-full sm:w-auto gap-2 border-destructive/20 hover:bg-destructive/10 hover:text-destructive transition-all active:scale-95"
+              onClick={() => mutate()}
+            >
+              <RefreshCcw className="h-4 w-4" />
+              Попробовать снова
+            </Button>
+          </Alert>
+        </motion.div>
       </div>
     );
   }

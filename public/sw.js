@@ -35,9 +35,10 @@ self.addEventListener('activate', (event) => {
 
 // Стратегия: Network First с фолбэком на кеш
 self.addEventListener('fetch', (event) => {
-    // Пропускаем не-GET запросы и API
+    // Пропускаем не-GET запросы, API и расширения Chrome
     if (event.request.method !== 'GET') return;
     if (event.request.url.includes('/api/')) return;
+    if (!event.request.url.startsWith('http')) return;
 
     event.respondWith(
         fetch(event.request)

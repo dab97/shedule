@@ -42,6 +42,18 @@ const DrawerContent = React.forwardRef<
     <DrawerOverlay />
     <DrawerPrimitive.Content
       ref={ref}
+      onOpenAutoFocus={(e) => {
+        // Предотвращаем конфликты с aria-hidden, если фокус не может быть передан немедленно
+        if (props.onOpenAutoFocus) {
+          props.onOpenAutoFocus(e);
+        }
+      }}
+      onCloseAutoFocus={(e) => {
+        // Гарантируем возврат фокуса на триггер без ошибок ARIA
+        if (props.onCloseAutoFocus) {
+          props.onCloseAutoFocus(e);
+        }
+      }}
       className={cn(
         "fixed inset-x-0 bottom-0 z-50 mt-24 flex h-auto flex-col rounded-t-[10px] border bg-background",
         className

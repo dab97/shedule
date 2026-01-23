@@ -7,7 +7,7 @@ import DynamicSchedule from "@/components/DynamicSchedule";
 
 export default function HomePage() {
   return (
-    <main className="container mx-auto py-8">
+    <main className="min-h-screen bg-background">
       <DynamicSchedule />
     </main>
   );
