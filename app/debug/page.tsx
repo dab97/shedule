@@ -61,6 +61,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { parse, isValid } from "date-fns";
 import { DebugAIChat } from "@/components/debug/ai-chat";
+import ReactMarkdown from "react-markdown";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -303,76 +304,61 @@ function ChangelogContent() {
         );
     }
 
-    // Парсинг и рендер в стиле shadcn/ui
+    // Рендер в стиле shadcn/ui с использованием ReactMarkdown
     const renderChangelog = (content: string) => {
-        const lines = content.split('\n');
-        const elements: React.ReactNode[] = [];
+        return (
+            <div className="prose prose-sm dark:prose-invert max-w-none">
+                <ReactMarkdown
+                    components={{
+                        h1: () => null, // Пропускаем главный заголовок
+                        h2: ({ children }) => (
+                            <div className="flex items-center gap-3 mt-6 first:mt-0 mb-4 border-b pb-2">
+                                <CalendarDays className="h-5 w-5 text-primary" />
+                                <span className="text-lg font-semibold m-0">{children}</span>
+                            </div>
+                        ),
+                        h3: ({ children }) => {
+                            const text = String(children);
+                            let variant: "default" | "secondary" | "destructive" | "outline" = "default";
+                            let icon = <CheckCircle className="h-3 w-3" />;
 
-        lines.forEach((line, i) => {
-            // Главный заголовок - пропускаем, он в CardHeader
-            if (line.startsWith('# ')) {
-                return;
-            }
+                            if (text.includes('Добавлено')) {
+                                variant = "default";
+                                icon = <CheckCircle className="h-3 w-3" />;
+                            } else if (text.includes('Улучшено') || text.includes('Обновлено')) {
+                                variant = "secondary";
+                                icon = <ArrowUp className="h-3 w-3" />;
+                            } else if (text.includes('Удалено')) {
+                                variant = "destructive";
+                                icon = <XCircle className="h-3 w-3" />;
+                            } else if (text.includes('Исправлено')) {
+                                variant = "outline";
+                                icon = <CheckCircle className="h-3 w-3" />;
+                            }
 
-            // Дата версии (## 23 января 2026)
-            if (line.startsWith('## ')) {
-                elements.push(
-                    <div key={i} className="flex items-center gap-3 mt-6 first:mt-0 mb-4">
-                        <CalendarDays className="h-5 w-5 text-primary" />
-                        <span className="text-lg font-semibold">{line.slice(3)}</span>
-                    </div>
-                );
-                return;
-            }
-
-            // Категория (### Добавлено, ### Улучшено и т.д.)
-            if (line.startsWith('### ')) {
-                const category = line.slice(4);
-                let variant: "default" | "secondary" | "destructive" | "outline" = "default";
-                let icon = <CheckCircle className="h-3 w-3" />;
-
-                if (category.includes('Добавлено')) {
-                    variant = "default";
-                    icon = <CheckCircle className="h-3 w-3" />;
-                } else if (category.includes('Улучшено') || category.includes('Обновлено')) {
-                    variant = "secondary";
-                    icon = <ArrowUp className="h-3 w-3" />;
-                } else if (category.includes('Удалено')) {
-                    variant = "destructive";
-                    icon = <XCircle className="h-3 w-3" />;
-                } else if (category.includes('Исправлено')) {
-                    variant = "outline";
-                    icon = <CheckCircle className="h-3 w-3" />;
-                }
-
-                elements.push(
-                    <Badge key={i} variant={variant} className="mt-4 mb-2 gap-1">
-                        {icon}
-                        {category}
-                    </Badge>
-                );
-                return;
-            }
-
-            // Элемент списка
-            if (line.startsWith('- ')) {
-                elements.push(
-                    <div key={i} className="flex items-start gap-2 ml-1 py-1">
-                        <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground mt-2 shrink-0" />
-                        <span className="text-sm text-muted-foreground">{line.slice(2)}</span>
-                    </div>
-                );
-                return;
-            }
-
-            // Разделитель
-            if (line.startsWith('---')) {
-                elements.push(<Separator key={i} className="my-6" />);
-                return;
-            }
-        });
-
-        return elements;
+                            return (
+                                <Badge variant={variant} className="mt-4 mb-2 gap-1 flex w-fit">
+                                    {icon}
+                                    {children}
+                                </Badge>
+                            );
+                        },
+                        ul: ({ children }) => <ul className="space-y-1 ml-1 list-none p-0">{children}</ul>,
+                        li: ({ children }) => (
+                            <div className="flex items-start gap-2 py-0.5">
+                                <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground mt-2 shrink-0" />
+                                <div className="text-sm text-muted-foreground flex-1">{children}</div>
+                            </div>
+                        ),
+                        hr: () => <Separator className="my-6" />,
+                        p: ({ children }) => <p className="text-sm text-muted-foreground my-1">{children}</p>,
+                        strong: ({ children }) => <strong className="font-semibold text-foreground">{children}</strong>,
+                    }}
+                >
+                    {content}
+                </ReactMarkdown>
+            </div>
+        );
     };
 
     return (
