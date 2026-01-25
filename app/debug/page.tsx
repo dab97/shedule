@@ -18,6 +18,11 @@ import {
     TabsTrigger,
 } from "@/components/ui/tabs";
 import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover";
+import {
     Select,
     SelectContent,
     SelectItem,
@@ -45,13 +50,17 @@ import {
     History,
     LayoutDashboard,
     ShieldCheck,
-    Table2
+    Table2,
+    Sparkles,
+    Bot
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useState, useMemo, useTransition, useRef } from "react";
+import { useState, useMemo, useTransition, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { parse, isValid } from "date-fns";
+import { DebugAIChat } from "@/components/debug/ai-chat";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -521,6 +530,45 @@ export default function DebugPage() {
             }
         });
 
+        // 5. ГЛУБОКАЯ АНАЛИТИКА: Нагрузка и Окна
+
+        // Нагрузка преподавателей
+        const teacherWorkload: Record<string, number> = {};
+        schedule.forEach(item => {
+            if (item.teacher) {
+                teacherWorkload[item.teacher] = (teacherWorkload[item.teacher] || 0) + 1;
+            }
+        });
+
+        // Поиск окон у групп
+        const groupDaySchedule: Record<string, Record<string, Set<string>>> = {};
+        schedule.forEach(item => {
+            if (item.group && item.date && item.time) {
+                if (!groupDaySchedule[item.group]) groupDaySchedule[item.group] = {};
+                if (!groupDaySchedule[item.group][item.date]) groupDaySchedule[item.group][item.date] = new Set();
+                groupDaySchedule[item.group][item.date].add(item.time);
+            }
+        });
+
+        const gaps: { group: string; date: string; gapTime: string }[] = [];
+        Object.entries(groupDaySchedule).forEach(([group, dates]) => {
+            Object.entries(dates).forEach(([date, times]) => {
+                const daySlots = VALID_TIME_SLOTS.map((slot, index) => ({ slot, index }))
+                    .filter(s => times.has(s.slot));
+
+                if (daySlots.length > 1) {
+                    const minIdx = Math.min(...daySlots.map(s => s.index));
+                    const maxIdx = Math.max(...daySlots.map(s => s.index));
+
+                    for (let i = minIdx + 1; i < maxIdx; i++) {
+                        if (!times.has(VALID_TIME_SLOTS[i])) {
+                            gaps.push({ group, date, gapTime: VALID_TIME_SLOTS[i] });
+                        }
+                    }
+                }
+            });
+        });
+
         return {
             total: schedule.length,
             groups: uniqueGroups.size,
@@ -532,7 +580,6 @@ export default function DebugPage() {
             duplicates,
             hasEmptyFields: Object.values(emptyFields).some(v => v > 0),
             hasDuplicates: duplicates.length > 0,
-            // Новые проверки
             invalidTimeSlots,
             invalidDates,
             invalidDays,
@@ -541,6 +588,12 @@ export default function DebugPage() {
             hasInvalidDates: invalidDates.length > 0,
             hasInvalidDays: invalidDays.length > 0,
             hasInvisibleRecords: invisibleRecords.length > 0,
+            // Новая аналитика
+            teacherWorkload: Object.entries(teacherWorkload)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 15), // Топ-15 нагруженных для контекста
+            gaps: gaps.slice(0, 20), // Первые 20 окон для примера
+            totalGaps: gaps.length,
         };
     }, [schedule]);
 
@@ -1051,6 +1104,36 @@ export default function DebugPage() {
                     <ChangelogContent />
                 </TabsContent>
             </Tabs>
+
+            {/* Плавающая кнопка ИИ Помощника */}
+            <div className="fixed bottom-20 right-6 z-50">
+                <AnimatePresence>
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.5 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="relative"
+                    >
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    className="rounded-full shadow-lg bg-background/80 backdrop-blur-md transition-all hover:scale-110 active:scale-95 group border-muted-foreground/20"
+                                >
+                                    <Sparkles className="h-[1.2rem] w-[1.2rem] text-primary animate-pulse" />
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent
+                                side="top"
+                                align="end"
+                                className="p-0 w-[400px] border-none bg-transparent shadow-2xl mb-4 mr-0"
+                            >
+                                <DebugAIChat stats={stats} />
+                            </PopoverContent>
+                        </Popover>
+                    </motion.div>
+                </AnimatePresence>
+            </div>
         </div>
     );
 }
