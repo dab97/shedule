@@ -122,11 +122,14 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
   const [teacherComboboxOpen, setTeacherComboboxOpen] = useState(false);
   const [calendarMonth, setCalendarMonth] = useState<Date>(new Date());
   const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [isMobileCalendarOpen, setIsMobileCalendarOpen] = useState(false);
+  const [isDesktopCalendarOpen, setIsDesktopCalendarOpen] = useState(false);
 
   // Haptic feedback для PWA
-  const triggerHaptic = () => {
+  const triggerHaptic = (type: 'light' | 'medium' | 'heavy' = 'light') => {
     if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
-      navigator.vibrate(10);
+      const duration = type === 'light' ? 10 : type === 'medium' ? 20 : 30;
+      navigator.vibrate(duration);
     }
   };
 
@@ -460,7 +463,7 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
           <label className="text-sm font-medium">Неделя</label>
           {/* Мобильная версия - Drawer */}
           <div className="block sm:hidden">
-            <Drawer shouldScaleBackground={false} modal={false}>
+            <Drawer shouldScaleBackground={false} modal={false} open={isMobileCalendarOpen} onOpenChange={setIsMobileCalendarOpen}>
               <DrawerTrigger asChild>
                 <Button
                   variant="outline"
@@ -485,7 +488,11 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setDate(new Date())}
+                    onClick={() => {
+                      triggerHaptic('medium');
+                      setDate(new Date());
+                      setIsMobileCalendarOpen(false);
+                    }}
                     className="flex-1"
                   >
                     Сегодня
@@ -493,7 +500,11 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setDate(addDays(new Date(), 7))}
+                    onClick={() => {
+                      triggerHaptic('medium');
+                      setDate(addDays(new Date(), 7));
+                      setIsMobileCalendarOpen(false);
+                    }}
                     className="flex-1"
                   >
                     След. неделя
@@ -511,8 +522,9 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
                     onMonthChange={setCalendarMonth}
                     onSelect={(newDate: Date | undefined) => {
                       if (newDate) {
-                        triggerHaptic();
+                        triggerHaptic('medium');
                         setDate(newDate);
+                        setIsMobileCalendarOpen(false);
                       }
                     }}
                     weekStartsOn={1}
@@ -526,7 +538,7 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
           </div>
           {/* Десктопная версия - Popover */}
           <div className="hidden sm:block">
-            <Popover modal={false}>
+            <Popover modal={false} open={isDesktopCalendarOpen} onOpenChange={setIsDesktopCalendarOpen}>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
@@ -543,7 +555,13 @@ export function ScheduleView({ scheduleData }: ScheduleViewProps) {
                 <Calendar
                   mode="single"
                   selected={date}
-                  onSelect={(newDate: Date | undefined) => newDate && setDate(newDate)}
+                  onSelect={(newDate: Date | undefined) => {
+                    if (newDate) {
+                      triggerHaptic('light');
+                      setDate(newDate);
+                      setIsDesktopCalendarOpen(false);
+                    }
+                  }}
                   initialFocus
                   weekStartsOn={1}
                   locale={ru}
