@@ -62,6 +62,14 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import { parse, isValid } from "date-fns";
 import { DebugAIChat } from "@/components/debug/ai-chat";
 import ReactMarkdown from "react-markdown";
+import { useIsMobile } from "@/hooks/use-mobile";
+import {
+    Drawer,
+    DrawerContent,
+    DrawerTrigger,
+    DrawerTitle,
+    DrawerDescription
+} from "@/components/ui/drawer";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -410,6 +418,9 @@ export default function DebugPage() {
 
     // Состояние обновления
     const [isRefreshing, setIsRefreshing] = useState(false);
+
+    // Проверка мобильного устройства
+    const isMobile = useIsMobile();
 
     // Обработчик кнопки "Обновить"
     const handleRefresh = async () => {
@@ -1099,24 +1110,47 @@ export default function DebugPage() {
                         animate={{ opacity: 1, scale: 1 }}
                         className="relative"
                     >
-                        <Popover>
-                            <PopoverTrigger asChild>
-                                <Button
-                                    variant="outline"
-                                    size="icon"
-                                    className="rounded-full shadow-lg bg-background/80 backdrop-blur-md transition-all hover:scale-110 active:scale-95 group border-muted-foreground/20"
+                        {!isMobile ? (
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        className="rounded-full shadow-lg bg-background/80 backdrop-blur-md transition-all hover:scale-110 active:scale-95 group border-muted-foreground/20"
+                                    >
+                                        <Sparkles className="h-[1.2rem] w-[1.2rem] text-primary animate-pulse" />
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent
+                                    side="top"
+                                    align="end"
+                                    className="p-0 w-[400px] border-none bg-transparent shadow-2xl mb-4 mr-0"
                                 >
-                                    <Sparkles className="h-[1.2rem] w-[1.2rem] text-primary animate-pulse" />
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent
-                                side="top"
-                                align="end"
-                                className="p-0 w-[400px] border-none bg-transparent shadow-2xl mb-4 mr-0"
-                            >
-                                <DebugAIChat stats={stats} />
-                            </PopoverContent>
-                        </Popover>
+                                    <DebugAIChat stats={stats} />
+                                </PopoverContent>
+                            </Popover>
+                        ) : (
+                            <Drawer>
+                                <DrawerTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        className="rounded-full shadow-lg bg-background/80 backdrop-blur-md transition-all hover:scale-110 active:scale-95 group border-muted-foreground/20"
+                                    >
+                                        <Sparkles className="h-[1.2rem] w-[1.2rem] text-primary animate-pulse" />
+                                    </Button>
+                                </DrawerTrigger>
+                                <DrawerContent className="h-[85vh] p-0">
+                                    <div className="hidden">
+                                        <DrawerTitle>ИИ Помощник</DrawerTitle>
+                                        <DrawerDescription>Чат с ИИ помощником по расписанию</DrawerDescription>
+                                    </div>
+                                    <div className="h-full w-full">
+                                        <DebugAIChat stats={stats} className="h-full border-none shadow-none rounded-none" />
+                                    </div>
+                                </DrawerContent>
+                            </Drawer>
+                        )}
                     </motion.div>
                 </AnimatePresence>
             </div>

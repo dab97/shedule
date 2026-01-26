@@ -25,9 +25,10 @@ interface Message {
 
 interface DebugAIChatProps {
     stats: any;
+    className?: string;
 }
 
-export function DebugAIChat({ stats }: DebugAIChatProps) {
+export function DebugAIChat({ stats, className }: DebugAIChatProps) {
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState("");
     const [isLoading, setIsLoading] = useState(false);
@@ -126,7 +127,7 @@ export function DebugAIChat({ stats }: DebugAIChatProps) {
     };
 
     return (
-        <Card className="flex flex-col h-[600px] border-primary/10 shadow-xl bg-background/50 backdrop-blur-sm overflow-hidden border">
+        <Card className={`flex flex-col h-[600px] border-primary/10 shadow-xl bg-background/50 backdrop-blur-sm overflow-hidden border ${className}`}>
             <CardHeader className="py-2 px-4 border-b bg-muted/30 flex flex-col gap-2 space-y-0">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
