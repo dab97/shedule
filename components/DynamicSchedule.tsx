@@ -1,7 +1,7 @@
 "use client";
 
 import useSWR from "swr";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ScheduleItem } from "@/types/schedule";
 import { ScheduleTabs } from "@/components/schedule-tabs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -10,82 +10,24 @@ import { motion, AnimatePresence } from "framer-motion";
 import { showScheduleToast, showToast } from "@/components/ui/sonner";
 import { AlertCircle, RefreshCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { API_ENDPOINTS, REFRESH_INTERVAL } from "@/lib/constants";
+import { API_ENDPOINTS, REFRESH_INTERVAL, STORAGE_KEYS } from "@/lib/constants";
+import { compareScheduleData, ChangeDetails } from "@/lib/schedule-utils";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-// Создаём уникальный ключ для занятия
-const createItemKey = (item: ScheduleItem): string => {
-  // Используем id если есть, иначе комбинацию всех ключевых полей
-  if (item.id) {
-    return item.id;
-  }
-  // Включаем предмет и преподавателя для уникальности
-  // (у одной группы может быть несколько занятий в одно время с разными преподавателями)
-  return `${item.date}-${item.time}-${item.group}-${item.subject}-${item.teacher}`;
-};
 
-// Сравниваем два набора данных и возвращаем детали изменений
-interface ChangeDetails {
-  added: ScheduleItem[];
-  removed: ScheduleItem[];
-  modified: { old: ScheduleItem; new: ScheduleItem }[];
-}
-
-const compareScheduleData = (
-  oldData: ScheduleItem[],
-  newData: ScheduleItem[]
-): ChangeDetails => {
-  const oldMap = new Map<string, ScheduleItem>();
-  const newMap = new Map<string, ScheduleItem>();
-
-  oldData.forEach((item) => oldMap.set(createItemKey(item), item));
-  newData.forEach((item) => newMap.set(createItemKey(item), item));
-
-  const added: ScheduleItem[] = [];
-  const removed: ScheduleItem[] = [];
-  const modified: { old: ScheduleItem; new: ScheduleItem }[] = [];
-
-  // Находим добавленные и изменённые
-  newData.forEach((newItem) => {
-    const key = createItemKey(newItem);
-    const oldItem = oldMap.get(key);
-
-    if (!oldItem) {
-      added.push(newItem);
-    } else if (
-      oldItem.subject !== newItem.subject ||
-      oldItem.teacher !== newItem.teacher ||
-      oldItem.classroom !== newItem.classroom ||
-      oldItem.lessonType !== newItem.lessonType
-    ) {
-      modified.push({ old: oldItem, new: newItem });
-    }
-  });
-
-  // Находим удалённые
-  oldData.forEach((oldItem) => {
-    const key = createItemKey(oldItem);
-    if (!newMap.has(key)) {
-      removed.push(oldItem);
-    }
-  });
-
-  return { added, removed, modified };
-};
-
-// Получаем краткое описание что изменилось
-const getChangeLabel = (old: ScheduleItem, current: ScheduleItem): string => {
-  const changes: string[] = [];
-  if (old.subject !== current.subject) changes.push("предмет");
-  if (old.teacher !== current.teacher) changes.push("препод.");
-  if (old.classroom !== current.classroom) changes.push("ауд.");
-  if (old.lessonType !== current.lessonType) changes.push("тип");
-  return changes.join(", ");
-};
 
 // Показываем уведомления об изменениях
-const showChangeNotifications = (changes: ChangeDetails): void => {
+const showChangeNotifications = (changes: ChangeDetails, onViewDetails: (changes: ChangeDetails) => void): void => {
   const maxToasts = 3;
   let count = 0;
 
@@ -143,13 +85,22 @@ const showChangeNotifications = (changes: ChangeDetails): void => {
   if (total > maxToasts) {
     showToast({
       title: 'Расписание обновлено',
-      message: `Всего ${total} изменений`,
+      message: `Всего ${total} изменений. Нажмите, чтобы посмотреть подробности.`,
       variant: 'info',
+      actionLabel: 'Посмотреть',
+      onAction: () => onViewDetails(changes),
     });
   }
 };
 
 export default function Home() {
+  const [changesDialogOpen, setChangesDialogOpen] = useState(false);
+  const [changesList, setChangesList] = useState<ChangeDetails | null>(null);
+
+  const handleViewDetails = (changes: ChangeDetails) => {
+    setChangesList(changes);
+    setChangesDialogOpen(true);
+  };
   const {
     data: schedule,
     error,
@@ -171,10 +122,54 @@ export default function Home() {
         isFirstLoadRef.current = false;
       } else if (previousDataRef.current) {
         const changes = compareScheduleData(previousDataRef.current, schedule);
-        const hasChanges = changes.added.length > 0 || changes.removed.length > 0 || changes.modified.length > 0;
+
+        // Фильтрация изменений на основе выбранной группы или преподавателя
+        let filteredChanges = changes;
+        if (typeof window !== 'undefined') {
+          // ЛОГИРОВАНИЕ ДЛЯ DEBUG (все изменения до фильтрации)
+          try {
+            const hasAnyChanges = changes.added.length > 0 || changes.removed.length > 0 || changes.modified.length > 0;
+            if (hasAnyChanges) {
+              const logEntry = {
+                timestamp: Date.now(),
+                changes: changes
+              };
+              const existingLog = sessionStorage.getItem('schedule_changes_log');
+              const log = existingLog ? JSON.parse(existingLog) : [];
+              log.unshift(logEntry); // Новые сверху
+              // Храним последние 50 записей
+              if (log.length > 50) log.length = 50;
+              sessionStorage.setItem('schedule_changes_log', JSON.stringify(log));
+            }
+          } catch (e) {
+            console.error('Failed to log schedule changes', e);
+          }
+
+          const selectedGroup = localStorage.getItem(STORAGE_KEYS.SELECTED_GROUP);
+          const selectedTeacher = localStorage.getItem(STORAGE_KEYS.SELECTED_TEACHER);
+
+          const isRelevant = (item: ScheduleItem) => {
+            const groupMatch = selectedGroup && selectedGroup !== 'all' && item.group === selectedGroup;
+            const teacherMatch = selectedTeacher && selectedTeacher !== 'all' && item.teacher === selectedTeacher;
+            // Если ничего не выбрано (или выбрано "все"), показываем всё. 
+            // Иначе - только то, что совпадает.
+            if ((!selectedGroup || selectedGroup === 'all') && (!selectedTeacher || selectedTeacher === 'all')) {
+              return true;
+            }
+            return groupMatch || teacherMatch;
+          };
+
+          filteredChanges = {
+            added: changes.added.filter(isRelevant),
+            removed: changes.removed.filter(isRelevant),
+            modified: changes.modified.filter(({ old, new: cur }) => isRelevant(old) || isRelevant(cur)),
+          };
+        }
+
+        const hasChanges = filteredChanges.added.length > 0 || filteredChanges.removed.length > 0 || filteredChanges.modified.length > 0;
 
         if (hasChanges) {
-          showChangeNotifications(changes);
+          showChangeNotifications(filteredChanges, handleViewDetails);
         }
 
         previousDataRef.current = [...schedule];
@@ -255,6 +250,103 @@ export default function Home() {
     <div>
       {/* Отображаем расписание с вкладками и таблицей */}
       <ScheduleTabs scheduleData={schedule} isLoading={isLoading} />
+
+      {/* Диалог со списком изменений */}
+      <Dialog open={changesDialogOpen} onOpenChange={setChangesDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle>Изменения в расписании</DialogTitle>
+            <DialogDescription>
+              Список последних изменений, отфильтрованный по вашим настройкам.
+            </DialogDescription>
+          </DialogHeader>
+
+          <ScrollArea className="flex-1 pr-4 -mr-4">
+            <div className="space-y-6 py-4">
+              {changesList && (
+                <>
+                  {changesList.added.length > 0 && (
+                    <div className="space-y-3">
+                      <h3 className="font-medium flex items-center gap-2 text-green-600 dark:text-green-400">
+                        <div className="h-2 w-2 rounded-full bg-green-500" />
+                        Добавлено ({changesList.added.length})
+                      </h3>
+                      <div className="grid gap-2">
+                        {changesList.added.map((item, i) => (
+                          <div key={i} className="p-3 rounded-lg border bg-card text-card-foreground shadow-sm text-sm">
+                            <div className="font-semibold">{item.subject}</div>
+                            <div className="text-muted-foreground flex gap-2 mt-1">
+                              <Badge variant="outline">{item.date}</Badge>
+                              <Badge variant="outline">{item.time}</Badge>
+                              <Badge variant="outline">{item.group}</Badge>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {changesList.modified.length > 0 && (
+                    <div className="space-y-3">
+                      <h3 className="font-medium flex items-center gap-2 text-amber-600 dark:text-amber-400">
+                        <div className="h-2 w-2 rounded-full bg-amber-500" />
+                        Изменено ({changesList.modified.length})
+                      </h3>
+                      <div className="grid gap-2">
+                        {changesList.modified.map(({ old, new: cur }, i) => (
+                          <div key={i} className="p-3 rounded-lg border bg-card text-card-foreground shadow-sm text-sm">
+                            <div className="font-semibold">{cur.subject}</div>
+                            <div className="text-muted-foreground flex gap-2 mt-1 mb-2">
+                              <Badge variant="outline">{cur.date}</Badge>
+                              <Badge variant="outline">{cur.time}</Badge>
+                              <Badge variant="outline">{cur.group}</Badge>
+                            </div>
+                            <div className="text-xs space-y-1 bg-muted/50 p-2 rounded">
+                              {old.teacher !== cur.teacher && (
+                                <div>Преподаватель: <span className="line-through opacity-70">{old.teacher}</span> → <span className="font-medium">{cur.teacher}</span></div>
+                              )}
+                              {old.classroom !== cur.classroom && (
+                                <div>Аудитория: <span className="line-through opacity-70">{old.classroom}</span> → <span className="font-medium">{cur.classroom}</span></div>
+                              )}
+                              {old.lessonType !== cur.lessonType && (
+                                <div>Тип: <span className="line-through opacity-70">{old.lessonType}</span> → <span className="font-medium">{cur.lessonType}</span></div>
+                              )}
+                              {old.subject !== cur.subject && (
+                                <div>Дисциплина: <span className="line-through opacity-70">{old.subject}</span> → <span className="font-medium">{cur.subject}</span></div>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {changesList.removed.length > 0 && (
+                    <div className="space-y-3">
+                      <h3 className="font-medium flex items-center gap-2 text-red-600 dark:text-red-400">
+                        <div className="h-2 w-2 rounded-full bg-red-500" />
+                        Удалено ({changesList.removed.length})
+                      </h3>
+                      <div className="grid gap-2">
+                        {changesList.removed.map((item, i) => (
+                          <div key={i} className="p-3 rounded-lg border bg-card text-card-foreground shadow-sm text-sm opacity-80 decoration-slate-500">
+                            <div className="font-semibold line-through">{item.subject}</div>
+                            <div className="text-muted-foreground flex gap-2 mt-1">
+                              <Badge variant="outline">{item.date}</Badge>
+                              <Badge variant="outline">{item.time}</Badge>
+                              <Badge variant="outline">{item.group}</Badge>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

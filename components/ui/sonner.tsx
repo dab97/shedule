@@ -184,11 +184,15 @@ export const showScheduleToast = ({
 export const showToast = ({
   title,
   message,
-  variant
+  variant,
+  actionLabel,
+  onAction,
 }: {
   title: string;
   message: string;
   variant: Variant;
+  actionLabel?: string;
+  onAction?: () => void;
 }) => {
   const Icon = variantIcons[variant];
 
@@ -206,6 +210,17 @@ export const showToast = ({
             {title}
           </p>
           <p className="text-xs text-muted-foreground">{message}</p>
+          {onAction && actionLabel && (
+            <button
+              onClick={() => {
+                onAction();
+                sonnerToast.dismiss(toastId);
+              }}
+              className="mt-2 text-xs font-medium bg-primary text-primary-foreground px-3 py-1.5 rounded-md hover:bg-primary/90 transition-colors"
+            >
+              {actionLabel}
+            </button>
+          )}
         </div>
         <button
           onClick={() => sonnerToast.dismiss(toastId)}

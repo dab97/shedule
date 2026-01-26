@@ -52,7 +52,8 @@ import {
     ShieldCheck,
     Table2,
     Sparkles,
-    Bot
+    Bot,
+    Trash2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -70,6 +71,8 @@ import {
     DrawerTitle,
     DrawerDescription
 } from "@/components/ui/drawer";
+import { API_ENDPOINTS, REFRESH_INTERVAL } from "@/lib/constants";
+import { compareScheduleData, ChangeDetails, LogEntry } from "@/lib/schedule-utils";
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -84,6 +87,8 @@ const VALID_TIME_SLOTS = [
     "18.50 - 20.20",
     "20.30 - 22.00",
 ];
+
+
 
 // Допустимые дни недели
 const VALID_DAYS = ["пн", "вт", "ср", "чт", "пт", "сб"];
@@ -387,16 +392,197 @@ function ChangelogContent() {
     );
 }
 
+// Компонент для отображения лога сессии в Debug
+function SessionLog() {
+    const [log, setLog] = useState<LogEntry[]>([]);
+
+    // Загружаем лог при монтировании и добавляем слушатель на изменение (если нужно реактивно, но sessionStorage не триггерит events в той же вкладке)
+    // Поэтому просто читаем при рендере, так как вкладка переключается
+    useEffect(() => {
+        const loadLog = () => {
+            if (typeof window !== 'undefined') {
+                try {
+                    const stored = sessionStorage.getItem('schedule_changes_log');
+                    if (stored) {
+                        setLog(JSON.parse(stored));
+                    }
+                } catch (e) {
+                    console.error("Failed to parse log", e);
+                }
+            }
+        };
+        loadLog();
+
+        // Можно добавить интервал или кнопку обновления, но пока хватит загрузки при маунте
+    }, []);
+
+    const handleClear = () => {
+        sessionStorage.removeItem('schedule_changes_log');
+        setLog([]);
+    };
+
+    if (log.length === 0) {
+        return (
+            <Card>
+                <CardHeader>
+                    <CardTitle>Лог сессии</CardTitle>
+                    <CardDescription>История изменений расписания за текущую сессию</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex flex-col items-center justify-center p-8 text-muted-foreground border-2 border-dashed rounded-lg">
+                        <History className="h-8 w-8 mb-2 opacity-50" />
+                        <p>Лог пуст. Изменений пока не было.</p>
+                    </div>
+                </CardContent>
+            </Card>
+        );
+    }
+
+    return (
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                    <CardTitle>Лог сессии</CardTitle>
+                    <CardDescription>Показаны последние 50 записей об изменениях</CardDescription>
+                </div>
+                <Button variant="destructive" size="sm" onClick={handleClear}>
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Очистить
+                </Button>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                {log.map((entry, idx) => (
+                    <div key={idx} className="border rounded-lg p-4 space-y-3">
+                        <div className="flex items-center justify-between">
+                            <Badge variant="outline" className="font-mono">
+                                {new Date(entry.timestamp).toLocaleTimeString()}
+                            </Badge>
+                            <div className="text-xs text-muted-foreground">
+                                {new Date(entry.timestamp).toLocaleDateString()}
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            {entry.changes.added.length > 0 && (
+                                <div className="text-sm">
+                                    <span className="font-semibold text-green-600">Добавлено: {entry.changes.added.length}</span>
+                                    <ul className="list-disc list-inside text-muted-foreground mt-1 text-xs pl-2">
+                                        {entry.changes.added.map((item, i) => (
+                                            <li key={i}>{item.subject} ({item.group}, {item.time})</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+                            {entry.changes.modified.length > 0 && (
+                                <div className="text-sm">
+                                    <span className="font-semibold text-amber-600">Изменено: {entry.changes.modified.length}</span>
+                                    <div className="grid gap-2 mt-2">
+                                        {entry.changes.modified.map(({ old, new: cur }, i) => {
+                                            const changes: { field: string; from: string; to: string }[] = [];
+                                            if (old.subject !== cur.subject) changes.push({ field: 'Дисциплина', from: old.subject, to: cur.subject });
+                                            if (old.teacher !== cur.teacher) changes.push({ field: 'Преподаватель', from: old.teacher || '-', to: cur.teacher || '-' });
+                                            if (old.classroom !== cur.classroom) changes.push({ field: 'Аудитория', from: old.classroom || '-', to: cur.classroom || '-' });
+                                            if (old.lessonType !== cur.lessonType) changes.push({ field: 'Тип', from: old.lessonType || '-', to: cur.lessonType || '-' });
+                                            if (old.time !== cur.time) changes.push({ field: 'Время', from: old.time || '-', to: cur.time || '-' });
+                                            if (old.date !== cur.date) changes.push({ field: 'Дата', from: old.date || '-', to: cur.date || '-' });
+
+                                            return (
+                                                <div key={i} className="p-3 rounded-lg border bg-card text-card-foreground shadow-sm text-sm">
+                                                    <div className="font-semibold">{cur.subject}</div>
+                                                    <div className="text-muted-foreground flex flex-wrap gap-2 mt-1 mb-2 text-xs">
+                                                        <Badge variant="outline">{cur.date}</Badge>
+                                                        <Badge variant="outline">{cur.time}</Badge>
+                                                        <Badge variant="outline">{cur.group}</Badge>
+                                                        {cur.teacher && <Badge variant="secondary">{cur.teacher}</Badge>}
+                                                    </div>
+
+                                                    {changes.length > 0 ? (
+                                                        <div className="space-y-1 bg-muted/50 p-2 rounded text-xs">
+                                                            {changes.map((change, idx) => (
+                                                                <div key={idx}>
+                                                                    <span className="text-muted-foreground">{change.field}: </span>
+                                                                    <span className="line-through text-red-500/70">{change.from}</span>
+                                                                    <span className="mx-1">→</span>
+                                                                    <span className="text-green-600 dark:text-green-400 font-medium">{change.to}</span>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    ) : (
+                                                        <div className="text-xs text-muted-foreground italic">Нет видимых изменений</div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+                            {entry.changes.removed.length > 0 && (
+                                <div className="text-sm">
+                                    <span className="font-semibold text-red-600">Удалено: {entry.changes.removed.length}</span>
+                                    <ul className="list-disc list-inside text-muted-foreground mt-1 text-xs pl-2">
+                                        {entry.changes.removed.map((item, i) => (
+                                            <li key={i}>{item.subject} ({item.group})</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                ))}
+            </CardContent>
+        </Card>
+    );
+}
+
 export default function DebugPage() {
     const { data: schedule, error, isLoading, mutate } = useSWR<ScheduleItem[]>(
         "/api/schedule/",
-        fetcher
+        fetcher,
+        {
+            refreshInterval: REFRESH_INTERVAL, // Обновляем данные автоматически
+        }
     );
     const [showDetails, setShowDetails] = useState(false);
     const [isTableReady, setIsTableReady] = useState(false);
     const [isPending, startTransition] = useTransition();
     const [showAllDuplicates, setShowAllDuplicates] = useState(false);
     const [showAllInvisible, setShowAllInvisible] = useState(false);
+
+    // Логика отслеживания изменений (аналогично DynamicSchedule)
+    const previousDataRef = useRef<ScheduleItem[] | null>(null);
+    const isFirstLoadRef = useRef(true);
+
+    useEffect(() => {
+        if (schedule && schedule.length > 0) {
+            if (isFirstLoadRef.current) {
+                previousDataRef.current = [...schedule];
+                isFirstLoadRef.current = false;
+            } else if (previousDataRef.current) {
+                const changes = compareScheduleData(previousDataRef.current, schedule);
+
+                if (typeof window !== 'undefined') {
+                    try {
+                        const hasAnyChanges = changes.added.length > 0 || changes.removed.length > 0 || changes.modified.length > 0;
+                        if (hasAnyChanges) {
+                            const logEntry: LogEntry = {
+                                timestamp: Date.now(),
+                                changes: changes
+                            };
+                            const existingLog = sessionStorage.getItem('schedule_changes_log');
+                            const log = existingLog ? JSON.parse(existingLog) : [];
+                            log.unshift(logEntry);
+                            if (log.length > 50) log.length = 50;
+                            sessionStorage.setItem('schedule_changes_log', JSON.stringify(log));
+                        }
+                    } catch (e) {
+                        console.error('Failed to log schedule changes in debug', e);
+                    }
+                }
+
+                previousDataRef.current = [...schedule];
+            }
+        }
+    }, [schedule]);
 
     // Обработчик показа таблицы с отложенным рендерингом
     const handleToggleDetails = () => {
@@ -642,7 +828,7 @@ export default function DebugPage() {
             </div>
 
             <Tabs defaultValue="overview" className="space-y-6">
-                <TabsList className="grid grid-cols-4 max-w-xl mx-auto">
+                <TabsList className="grid grid-cols-5 w-full max-w-3xl mx-auto">
                     <TabsTrigger value="overview" className="flex items-center gap-1.5">
                         <LayoutDashboard className="h-3.5 w-3.5" />
                         Обзор
@@ -654,6 +840,10 @@ export default function DebugPage() {
                     <TabsTrigger value="details" className="flex items-center gap-1.5">
                         <Table2 className="h-3.5 w-3.5" />
                         Детали
+                    </TabsTrigger>
+                    <TabsTrigger value="session-log" className="flex items-center gap-1.5">
+                        <Trash2 className="h-3.5 w-3.5" />
+                        Лог сессии
                     </TabsTrigger>
                     <TabsTrigger value="history" className="flex items-center gap-1.5">
                         <History className="h-3.5 w-3.5" />
@@ -798,6 +988,7 @@ export default function DebugPage() {
                             </CardContent>
                         </Card>
                     </div>
+
                 </TabsContent>
 
                 <TabsContent value="checks" className="space-y-6">
@@ -1097,10 +1288,14 @@ export default function DebugPage() {
                     </Card>
                 </TabsContent>
 
+                <TabsContent value="session-log">
+                    <SessionLog />
+                </TabsContent>
+
                 <TabsContent value="history" className="space-y-6">
                     <ChangelogContent />
                 </TabsContent>
-            </Tabs>
+            </Tabs >
 
             {/* Плавающая кнопка ИИ Помощника */}
             <div className="fixed bottom-20 right-6 z-50">
