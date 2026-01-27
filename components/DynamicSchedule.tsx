@@ -308,16 +308,36 @@ export default function Home({ initialGroup, initialTeacher }: DynamicSchedulePr
                             </div>
                             <div className="text-xs space-y-1 bg-muted/50 p-2 rounded">
                               {old.teacher !== cur.teacher && (
-                                <div>Преподаватель: <span className="line-through opacity-70">{old.teacher}</span> → <span className="font-medium">{cur.teacher}</span></div>
+                                <div>
+                                  <span className="text-muted-foreground">Преподаватель:</span>{" "}
+                                  <span className="line-through text-red-500 opacity-70">{old.teacher}</span>{" "}
+                                  <span>→</span>{" "}
+                                  <span className="font-bold text-green-600 dark:text-green-400">{cur.teacher}</span>
+                                </div>
                               )}
                               {old.classroom !== cur.classroom && (
-                                <div>Аудитория: <span className="line-through opacity-70">{old.classroom}</span> → <span className="font-medium">{cur.classroom}</span></div>
+                                <div>
+                                  <span className="text-muted-foreground">Аудитория:</span>{" "}
+                                  <span className="line-through text-red-500 opacity-70">{old.classroom}</span>{" "}
+                                  <span>→</span>{" "}
+                                  <span className="font-bold text-green-600 dark:text-green-400">{cur.classroom}</span>
+                                </div>
                               )}
                               {old.lessonType !== cur.lessonType && (
-                                <div>Тип: <span className="line-through opacity-70">{old.lessonType}</span> → <span className="font-medium">{cur.lessonType}</span></div>
+                                <div>
+                                  <span className="text-muted-foreground">Тип:</span>{" "}
+                                  <span className="line-through text-red-500 opacity-70">{old.lessonType}</span>{" "}
+                                  <span>→</span>{" "}
+                                  <span className="font-bold text-green-600 dark:text-green-400">{cur.lessonType}</span>
+                                </div>
                               )}
                               {old.subject !== cur.subject && (
-                                <div>Дисциплина: <span className="line-through opacity-70">{old.subject}</span> → <span className="font-medium">{cur.subject}</span></div>
+                                <div>
+                                  <span className="text-muted-foreground">Дисциплина:</span>{" "}
+                                  <span className="line-through text-red-500 opacity-70">{old.subject}</span>{" "}
+                                  <span>→</span>{" "}
+                                  <span className="font-bold text-green-600 dark:text-green-400">{cur.subject}</span>
+                                </div>
                               )}
                             </div>
                           </div>
