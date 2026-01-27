@@ -93,7 +93,12 @@ const showChangeNotifications = (changes: ChangeDetails, onViewDetails: (changes
   }
 };
 
-export default function Home() {
+interface DynamicScheduleProps {
+  initialGroup?: string;
+  initialTeacher?: string;
+}
+
+export default function Home({ initialGroup, initialTeacher }: DynamicScheduleProps) {
   const [changesDialogOpen, setChangesDialogOpen] = useState(false);
   const [changesList, setChangesList] = useState<ChangeDetails | null>(null);
 
@@ -249,7 +254,7 @@ export default function Home() {
   return (
     <div>
       {/* Отображаем расписание с вкладками и таблицей */}
-      <ScheduleTabs scheduleData={schedule} isLoading={isLoading} />
+      <ScheduleTabs scheduleData={schedule} isLoading={isLoading} initialGroup={initialGroup} initialTeacher={initialTeacher} />
 
       {/* Диалог со списком изменений */}
       <Dialog open={changesDialogOpen} onOpenChange={setChangesDialogOpen}>

@@ -8,10 +8,12 @@ import { Skeleton } from "@/components/ui/skeleton"
 
 interface ScheduleTabsProps {
   scheduleData: ScheduleItem[],
-  isLoading: boolean
+  isLoading: boolean,
+  initialGroup?: string,
+  initialTeacher?: string
 }
 
-export function ScheduleTabs({ scheduleData, isLoading }: ScheduleTabsProps) {
+export function ScheduleTabs({ scheduleData, isLoading, initialGroup, initialTeacher }: ScheduleTabsProps) {
   return (
     <Tabs defaultValue="calendar" className="container mx-auto">
       <TabsList className="grid max-w-xs sm:max-w-sm my-10 mx-auto grid-cols-2">
@@ -39,7 +41,7 @@ export function ScheduleTabs({ scheduleData, isLoading }: ScheduleTabsProps) {
             ))}
           </div>
         ) : (
-          <ScheduleView scheduleData={scheduleData} />
+          <ScheduleView scheduleData={scheduleData} initialGroup={initialGroup} initialTeacher={initialTeacher} />
         )}
       </TabsContent>
 
