@@ -724,17 +724,11 @@ export function ScheduleView({ scheduleData, initialGroup, initialTeacher }: Sch
                         }}
                       >
                         <div className="space-y-1 leading-relaxed">
-                          <div className="font-semibold text-sm flex items-start gap-2">
-                            <span className="flex-1 text-base">{lessons[0].subject}</span>
+                          <div className="font-semibold text-sm pr-6">
+                            <span>{lessons[0].subject}</span>
                             {lessons.length > 1 && (
-                              <span className="text-xs font-normal ml-1 text-primary">
-                                (+{lessons.length - 1}{" "}
-                                {getDeclension(lessons.length - 1, [
-                                  "занятие",
-                                  "занятия",
-                                  "занятий",
-                                ])}
-                                )
+                              <span className="absolute top-2 right-2 text-[10px] font-medium text-primary bg-background/90 px-1.5 py-0.5 rounded-lg border shadow-sm">
+                                +{lessons.length - 1} {getDeclension(lessons.length - 1, ["занятие", "занятия", "занятий"])}
                               </span>
                             )}
                           </div>
@@ -917,17 +911,16 @@ export function ScheduleView({ scheduleData, initialGroup, initialTeacher }: Sch
                       }}
                     >
                       <div className="space-y-1 leading-relaxed">
-                        <div className="font-semibold text-sm flex items-start gap-2">
+                        <div className="font-semibold text-sm pr-16 relative">
                           <span className="flex-1">{lessons[0].subject}</span>
                           {lessons.length > 1 && (
-                            <span className="text-xs font-normal ml-1 text-primary">
-                              (+{lessons.length - 1}{" "}
+                            <span className="absolute -top-1 -right-1 text-[10px] font-medium text-primary bg-background/90 px-1.5 py-0.5 rounded-lg border shadow-sm pointer-events-none">
+                              +{lessons.length - 1}{" "}
                               {getDeclension(lessons.length - 1, [
                                 "занятие",
                                 "занятия",
                                 "занятий",
                               ])}
-                              )
                             </span>
                           )}
                         </div>
@@ -951,7 +944,7 @@ export function ScheduleView({ scheduleData, initialGroup, initialTeacher }: Sch
                           </span>
                         </div>
                         {isActive && (
-                          <div className="absolute bottom-3 left-3">
+                          <div className="absolute bottom-2 left-2">
                             <Badge key="desktop-badge-bottom" variant="default" className="animate-pulse bg-green-600 hover:bg-green-700 text-white border-none px-1.5 py-0 text-[10px] h-5">Сейчас</Badge>
                           </div>
                         )}

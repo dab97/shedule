@@ -266,7 +266,7 @@ export default function Home({ initialGroup, initialTeacher }: DynamicSchedulePr
             </DialogDescription>
           </DialogHeader>
 
-          <ScrollArea className="flex-1 pr-4 -mr-4">
+          <ScrollArea className="max-h-[60vh] pr-4">
             <div className="space-y-6 py-4">
               {changesList && (
                 <>
