@@ -4,20 +4,13 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
+
 import localFont from "next/font/local";
 import "./globals.css";
 
 // Подключение шрифтов
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-  weight: "100 900",
-});
-const geistMono = localFont({
-  src: "./fonts/GeistMonoVF.woff",
-  variable: "--font-geist-mono",
-  weight: "100 900",
-});
+
+
 const evolventaSans = localFont({
   src: "./fonts/Evolventa-Regular.woff",
   variable: "--font-evolventa-sans",
@@ -92,8 +85,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`} suppressHydrationWarning>
-      <body className="antialiased">
+    <html lang="en" className={`${evolventaSans.variable} ${evolventaBold.variable}`} suppressHydrationWarning>
+      <body>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <ThemeSwitcher />
           {children}

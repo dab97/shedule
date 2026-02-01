@@ -9,6 +9,7 @@ import {
   DialogDescription,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Drawer,
   DrawerContent,
@@ -25,8 +26,10 @@ import {
   addMonths,
   parse,
   isWithinInterval,
+  isSameDay,
 }
   from "date-fns";
+import { MobileWeekView } from "./mobile-week-view";
 import { ru } from "date-fns/locale";
 import {
   CalendarDays,
@@ -42,10 +45,12 @@ import {
   Copy,
   Link,
   Plus,
+  Search,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
 import { cn, getDeclension } from "@/lib/utils";
+import { ResponsiveComboBox } from "./responsive-combobox";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -288,76 +293,31 @@ export function ScheduleView({ scheduleData, initialGroup, initialTeacher }: Sch
   }, [initialGroup, initialTeacher]);
 
   return (
-    <div className="container mx-auto p-4 space-y-6 overflow-x-auto">
-      <div className="flex flex-col sm:flex-row gap-4 sm:gap-6">
+    <div className="container mx-auto p-2 sm:p-4 space-y-3 sm:space-y-6 overflow-x-auto">
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-6">
         <div className="w-full sm:w-56 space-y-2">
-          <label className="text-sm font-medium">Группа</label>
-          <Popover open={groupComboboxOpen} onOpenChange={setGroupComboboxOpen} modal={false}>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                role="combobox"
-                aria-expanded={groupComboboxOpen}
-                className="w-full justify-between font-normal"
-              >
-                <span className="truncate">
-                  {selectedGroup === "all" ? "Все группы" : selectedGroup}
-                </span>
-                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-[calc(100vw-2rem)] sm:w-56 p-0">
-              <Command>
-                <CommandInput placeholder="Поиск группы..." />
-                <CommandEmpty>Группа не найдена</CommandEmpty>
-                <CommandGroup className="max-h-64 overflow-y-auto">
-                  <CommandItem
-                    value="all"
-                    onSelect={() => {
-                      setSelectedGroup("all");
-                      setGroupComboboxOpen(false);
-                    }}
-                  >
-                    <Check
-                      className={cn(
-                        "mr-2 h-4 w-4",
-                        selectedGroup === "all" ? "opacity-100" : "opacity-0"
-                      )}
-                    />
-                    Все группы
-                  </CommandItem>
-                  {uniqueGroups
-                    .slice()
-                    .sort((a, b) => a.localeCompare(b))
-                    .map((group) => (
-                      <CommandItem
-                        key={group}
-                        value={group}
-                        onSelect={(currentValue) => {
-                          setSelectedGroup(currentValue === selectedGroup ? "all" : currentValue);
-                          setGroupComboboxOpen(false);
-                        }}
-                      >
-                        <Check
-                          className={cn(
-                            "mr-2 h-4 w-4",
-                            selectedGroup === group ? "opacity-100" : "opacity-0"
-                          )}
-                        />
-                        {group}
-                      </CommandItem>
-                    ))}
-                </CommandGroup>
-              </Command>
-            </PopoverContent>
-          </Popover>
+          <label className="text-sm font-medium hidden sm:block">Группа</label>
+          <ResponsiveComboBox
+            items={[
+              { value: "all", label: "Все группы" },
+              ...uniqueGroups.sort((a, b) => a.localeCompare(b)).map(g => ({ value: g, label: g }))
+            ]}
+            value={selectedGroup}
+            onValueChange={(val: string) => {
+              // Комбобокс возвращает пустоту при повторном клике, но нам нужно "all"
+              setSelectedGroup(val === "" ? "all" : val);
+            }}
+            placeholder="Выберите группу"
+            searchPlaceholder="Поиск группы..."
+            emptyText="Группа не найдена"
+          />
           {selectedGroup !== "all" && selectedTeacher === "all" && (
-            <Button onClick={handleSaveGroup} className="w-full mt-2">Моя группа</Button>
+            <Button onClick={handleSaveGroup} className="w-full">Моя группа</Button>
           )}
           {selectedGroup !== "all" && selectedTeacher === "all" && (
             <Popover modal={false}>
               <PopoverTrigger asChild>
-                <Button variant="outline" className="w-full mt-2">
+                <Button variant="outline" className="w-full">
                   <CalendarSync className="h-4 w-4" />
                   Подписаться на календарь
                 </Button>
@@ -393,72 +353,26 @@ export function ScheduleView({ scheduleData, initialGroup, initialTeacher }: Sch
         </div>
 
         <div className="w-full sm:w-80 space-y-2">
-          <label className="text-sm font-medium">Преподаватель</label>
-          <Popover open={teacherComboboxOpen} onOpenChange={setTeacherComboboxOpen} modal={false}>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                role="combobox"
-                aria-expanded={teacherComboboxOpen}
-                className="w-full justify-between font-normal"
-              >
-                <span className="truncate">
-                  {selectedTeacher === "all" ? "Все преподаватели" : selectedTeacher}
-                </span>
-                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-[calc(100vw-2rem)] sm:w-80 p-0">
-              <Command>
-                <CommandInput placeholder="Поиск преподавателя..." />
-                <CommandEmpty>Преподаватель не найден</CommandEmpty>
-                <CommandGroup className="max-h-64 overflow-y-auto">
-                  <CommandItem
-                    value="all"
-                    onSelect={() => {
-                      setSelectedTeacher("all");
-                      setTeacherComboboxOpen(false);
-                    }}
-                  >
-                    <Check
-                      className={cn(
-                        "mr-2 h-4 w-4",
-                        selectedTeacher === "all" ? "opacity-100" : "opacity-0"
-                      )}
-                    />
-                    Все преподаватели
-                  </CommandItem>
-                  {uniqueTeachers
-                    .slice()
-                    .sort((a, b) => a.localeCompare(b))
-                    .map((teacher) => (
-                      <CommandItem
-                        key={teacher}
-                        value={teacher}
-                        onSelect={(currentValue) => {
-                          setSelectedTeacher(currentValue === selectedTeacher ? "all" : currentValue);
-                          setTeacherComboboxOpen(false);
-                        }}
-                      >
-                        <Check
-                          className={cn(
-                            "mr-2 h-4 w-4",
-                            selectedTeacher === teacher ? "opacity-100" : "opacity-0"
-                          )}
-                        />
-                        {teacher}
-                      </CommandItem>
-                    ))}
-                </CommandGroup>
-              </Command>
-            </PopoverContent>
-          </Popover>
+          <label className="text-sm font-medium hidden sm:block">Преподаватель</label>
+          <ResponsiveComboBox
+            items={[
+              { value: "all", label: "Все преподаватели" },
+              ...uniqueTeachers.sort((a, b) => a.localeCompare(b)).map(t => ({ value: t, label: t }))
+            ]}
+            value={selectedTeacher}
+            onValueChange={(val: string) => {
+              setSelectedTeacher(val === "" ? "all" : val);
+            }}
+            placeholder="Выберите преподавателя"
+            searchPlaceholder="Поиск преподавателя..."
+            emptyText="Преподаватель не найден"
+          />
           {selectedTeacher !== "all" && selectedGroup === "all" && (
             <>
-              <Button onClick={handleSaveTeacher} className="w-full mt-2">Это я</Button>
+              <Button onClick={handleSaveTeacher} className="w-full">Это я</Button>
               <Popover modal={false}>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-full mt-2">
+                  <Button variant="outline" className="w-full">
                     <CalendarSync className="h-4 w-4" />
                     Подписаться на календарь
                   </Button>
@@ -495,7 +409,7 @@ export function ScheduleView({ scheduleData, initialGroup, initialTeacher }: Sch
           )}
         </div>
 
-        <div className="w-full sm:w-64 space-y-2">
+        <div className="hidden sm:block w-full sm:w-64 space-y-2">
           <label className="text-sm font-medium">Неделя</label>
           {/* Мобильная версия - Drawer */}
           <div className="block sm:hidden">
@@ -608,7 +522,7 @@ export function ScheduleView({ scheduleData, initialGroup, initialTeacher }: Sch
         </div>
       </div>
 
-      <div className="flex flex-col md:flex-row items-center justify-between mb-6 gap-4 px-2">
+      <div className="hidden sm:flex flex-col md:flex-row items-center justify-between mb-6 gap-4 px-2">
         <div className="flex items-center gap-2 overflow-x-auto max-w-full pb-1">
           <Button
             variant="outline"
@@ -655,63 +569,313 @@ export function ScheduleView({ scheduleData, initialGroup, initialTeacher }: Sch
       </div>
 
       {/* Мобильная версия */}
-      <div className="block sm:hidden space-y-6">
-        {daysWithDates.map((day) => {
-          // Проверяем, есть ли занятия в этот день на текущей неделе
-          const hasLessons = TIME_SLOTS.some((timeSlot) =>
-            filteredData.some(
-              (item) =>
-                item.time === timeSlot &&
-                item.dayOfWeek
-                  .toLowerCase()
-                  .includes(day.label.toLowerCase()) &&
-                isWithinInterval(parse(item.date, "dd.MM.yyyy", new Date()), {
-                  start: getCurrentWeekDates().start,
-                  end: getCurrentWeekDates().end,
-                })
-            )
-          );
+      <div className="block sm:hidden space-y-4">
+        {selectedGroup === "all" && selectedTeacher === "all" ? (
+          <div className="flex flex-col items-center justify-center min-h-[calc(100vh-220px)] text-center p-8 space-y-4 text-muted-foreground animate-in fade-in duration-500">
+            <div className="bg-muted p-4 rounded-full">
+              <Search className="h-8 w-8 opacity-50" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="font-semibold text-foreground">Расписание не выбрано</h3>
+              <p className="text-sm">Выберите группу или преподавателя выше, чтобы увидеть расписание</p>
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* Навигация по неделям (Mobile Style) */}
+            <div className="flex items-center justify-between px-2 py-2 mb-2">
+              <Button
+                variant="ghost"
+                className="text-primary hover:bg-transparent p-0 h-auto font-medium flex items-center gap-1"
+                onClick={() => {
+                  triggerHaptic('medium');
+                  setDate(prev => addDays(prev, -7));
+                }}
+              >
+                <ChevronLeft className="h-5 w-5" />
+                <span>Пред. неделя</span>
+              </Button>
 
-          // Если нет занятий на текущей неделе, не рендерим заголовок дня
-          if (!hasLessons) {
-            return null; // Пропускаем рендеринг, если нет занятий
-          }
+              <Button
+                variant="ghost"
+                className="text-primary hover:bg-transparent p-0 h-auto font-medium flex items-center gap-1"
+                onClick={() => {
+                  triggerHaptic('medium');
+                  setDate(prev => addDays(prev, 7));
+                }}
+              >
+                <span>След. неделя</span>
+                <ChevronRight className="h-5 w-5" />
+              </Button>
+            </div>
 
-          return (
-            <div key={`${day.label}-${day.date}`} className="space-y-2">
-              <div className={cn(
-                "border text-center p-4 rounded-lg font-semibold transition-colors",
-                isToday(day.fullDate)
-                  ? "bg-primary text-primary-foreground border-primary shadow-md"
-                  : "bg-slate-100 dark:bg-gray-900"
-              )}>
-                {day.label} ({day.date})
+            {/* Компонент выбора дня */}
+            <MobileWeekView
+              currentDate={date}
+              onSelectDate={(newDate) => {
+                triggerHaptic('light');
+                setDate(newDate);
+              }}
+            />
+
+            {/* Заголовок дня и счетчик */}
+            <div className="px-1 pb-2 pt-2">
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="text-xl font-bold capitalize tracking-tight">
+                  {format(date, "EEEE, d MMMM", { locale: ru })}
+                </h2>
+                <span className="text-xs font-bold bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 border border-blue-200 px-3 py-1 rounded-full shrink-0 uppercase">
+                  {(() => {
+                    const dayLessons = filteredData.filter(l => isSameDay(parse(l.date, "dd.MM.yyyy", new Date()), date));
+                    const uniqueTimes = new Set(dayLessons.map(l => l.time)).size;
+                    if (uniqueTimes === 0) return "Нет занятий";
+                    return `${uniqueTimes} ${getDeclension(uniqueTimes, ['пара', 'пары', 'пар'])}`;
+                  })()}
+                </span>
               </div>
-              {TIME_SLOTS.map((timeSlot) => {
+            </div>
+
+            <div className="space-y-3 min-h-[50vh]">
+              {(() => {
+                // 1. Фильтруем занятия для выбранного дня
+                const currentDayLessons = filteredData.filter(item => {
+                  const itemDate = parse(item.date, "dd.MM.yyyy", new Date());
+                  return isSameDay(itemDate, date);
+                });
+
+                // 2. Группируем занятия
+                const groupedLessons: Record<string, ScheduleItem[]> = {};
+
+                currentDayLessons.forEach(lesson => {
+                  // Ключ группировки: время + предмет + тип + аудитория + преподаватель
+                  // (всё, что делает занятие "тем же самым" для разных групп)
+                  const key = `${lesson.time}-${lesson.subject}-${lesson.lessonType}-${lesson.classroom}-${lesson.teacher}`;
+
+                  if (!groupedLessons[key]) {
+                    groupedLessons[key] = [];
+                  }
+                  groupedLessons[key].push(lesson);
+                });
+
+                const sortedGroupKeys = Object.keys(groupedLessons).sort((a, b) => {
+                  const timeA = groupedLessons[a][0].time.split(' - ')[0];
+                  const timeB = groupedLessons[b][0].time.split(' - ')[0];
+                  return timeA.localeCompare(timeB);
+                });
+
+                if (sortedGroupKeys.length === 0) {
+                  return (
+                    <div className="flex flex-col items-center justify-center h-48 text-muted-foreground">
+                      <CalendarDays className="h-12 w-12 mb-4 opacity-20" />
+                      <p>Нет занятий в этот день</p>
+                    </div>
+                  );
+                }
+
+                return sortedGroupKeys.map((key, index) => {
+                  const groupLessons = groupedLessons[key].sort((a, b) => a.group.localeCompare(b.group));
+                  const primaryLesson = groupLessons[0];
+                  const isActive = isLessonActive(primaryLesson.time, format(date, DATE_FORMATS.SHORT));
+                  const isGrouped = groupLessons.length > 1;
+
+                  return (
+                    <Drawer key={`${primaryLesson.date}-${primaryLesson.time}-${index}`} shouldScaleBackground={false}>
+                      <DrawerTrigger asChild>
+                        <Card
+                          className={cn(
+                            "rounded-xl shadow-sm relative overflow-hidden active:scale-[0.98] transition-transform cursor-pointer",
+                            isActive && "border-primary ring-1 ring-primary/20 shadow-md bg-primary/5"
+                          )}
+                          onClick={() => handleLessonClick(primaryLesson)}
+                        >
+                          {/* Бейдж с количеством занятий */}
+                          {isGrouped && (
+                            <div className={cn(
+                              "absolute right-3 px-2.5 py-1 rounded-full text-xs font-semibold shadow-sm z-10",
+                              isActive ? "top-9" : "top-3",
+                              "bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 border border-blue-200"
+                            )}>
+                              {groupLessons.length} {getDeclension(groupLessons.length, ['группа', 'группы', 'групп'])}
+                            </div>
+                          )}
+
+                          {/* Индикатор текущего урока */}
+                          {isActive && (
+                            <div className="absolute top-0 right-0 px-2 py-1 bg-primary text-primary-foreground text-[10px] font-bold rounded-bl-lg z-10">
+                              СЕЙЧАС
+                            </div>
+                          )}
+
+                          <CardContent className="p-4 space-y-3">
+                            {/* Заголовок и Тип занятия */}
+                            <div className={cn("flex flex-col", isGrouped ? "pr-24" : "pr-4")}>
+                              <h3 className="font-bold text-base leading-tight mb-1.5">
+                                {primaryLesson.subject}
+                              </h3>
+                              <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                                <FileText className="h-3.5 w-3.5 shrink-0" />
+                                <span className="truncate">{primaryLesson.lessonType}</span>
+                              </div>
+                            </div>
+
+                            {/* Контекстная информация: Преподаватель или Группа */}
+                            <div className="flex items-center gap-1.5 justify-end text-sm text-muted-foreground w-full">
+                              {selectedTeacher !== "all" ? (
+                                <>
+                                  <Users className="h-3.5 w-3.5 shrink-0" />
+                                  <span className="text-right font-medium truncate">
+                                    {groupLessons.length > 1
+                                      ? `${groupLessons[0].group} и ещё ${groupLessons.length - 1}`
+                                      : groupLessons[0].group}
+                                  </span>
+                                </>
+                              ) : (
+                                <>
+                                  <User className="h-3.5 w-3.5 shrink-0" />
+                                  <span className="text-right font-medium truncate">{primaryLesson.teacher}</span>
+                                </>
+                              )}
+                            </div>
+
+                            {/* Футер: Время и Аудитория */}
+                            <div className="flex items-center justify-between pt-3 border-t border-dashed">
+                              <div className="flex items-center gap-2 font-mono text-base font-semibold">
+                                <Clock className="h-4 w-4 text-primary" />
+                                {primaryLesson.time}
+                              </div>
+                              <div className="flex items-center gap-1.5 text-sm font-medium">
+                                <MapPin className="h-4 w-4 text-muted-foreground" />
+                                ауд. {primaryLesson.classroom}
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </DrawerTrigger>
+                      <DrawerContent>
+                        <div className="overflow-y-auto max-h-[calc(95vh-5rem)] px-4 pb-4">
+                          <DrawerHeader className="pt-8">
+                            <DrawerTitle className="text-center font-bold text-lg">
+                              {primaryLesson.subject}
+                            </DrawerTitle>
+                            <DrawerDescription className="text-center">
+                              {primaryLesson.lessonType} • {format(date, "dd MMMM", { locale: ru })}
+                            </DrawerDescription>
+                          </DrawerHeader>
+
+                          <div className="space-y-4 mt-4">
+                            {groupLessons.map((lesson, idx) => (
+                              <Card key={idx} className="bg-muted/50 border shadow-none">
+                                <CardContent className="p-4 space-y-4">
+                                  <div className="flex items-center gap-4">
+                                    <div className="h-10 w-10 rounded-xl bg-blue-100 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400 flex items-center justify-center shrink-0">
+                                      <User className="h-5 w-5" />
+                                    </div>
+                                    <div className="space-y-0.5">
+                                      <div className="text-xs text-muted-foreground">Преподаватель</div>
+                                      <div className="font-medium text-sm leading-tight">{lesson.teacher}</div>
+                                    </div>
+                                  </div>
+
+                                  <div className="flex items-center gap-4">
+                                    <div className="h-10 w-10 rounded-xl bg-green-100 text-green-600 dark:bg-green-500/20 dark:text-green-400 flex items-center justify-center shrink-0">
+                                      <Users className="h-5 w-5" />
+                                    </div>
+                                    <div className="space-y-0.5">
+                                      <div className="text-xs text-muted-foreground">Группа</div>
+                                      <div className="font-medium text-sm leading-tight">{lesson.group}</div>
+                                    </div>
+                                  </div>
+
+                                  <div className="flex items-center justify-between gap-4">
+                                    <div className="flex items-center gap-4">
+                                      <div className="h-10 w-10 rounded-xl bg-orange-100 text-orange-600 dark:bg-orange-500/20 dark:text-orange-400 flex items-center justify-center shrink-0">
+                                        <Clock className="h-5 w-5" />
+                                      </div>
+                                      <div className="space-y-0.5">
+                                        <div className="text-xs text-muted-foreground">Время</div>
+                                        <div className="font-medium text-sm leading-tight">{lesson.time}</div>
+                                      </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-4 flex-row-reverse text-right">
+                                      <div className="h-10 w-10 rounded-xl bg-violet-100 text-violet-600 dark:bg-violet-500/20 dark:text-violet-400 flex items-center justify-center shrink-0">
+                                        <MapPin className="h-5 w-5" />
+                                      </div>
+                                      <div className="space-y-0.5">
+                                        <div className="text-xs text-muted-foreground">Аудитория</div>
+                                        <div className="font-medium text-sm leading-tight">{lesson.classroom}</div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            ))}
+                          </div>
+                        </div>
+                      </DrawerContent>
+                    </Drawer>
+                  );
+                });
+              })()}
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Десктопная версия */}
+      <div className="hidden sm:block space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-[repeat(7,minmax(200px,1fr))] gap-4">
+          <div className="flex flex-col items-center justify-center border bg-slate-100 dark:bg-gray-900 p-4 rounded-lg">
+            <h2 className="text-sm sm:text-lg font-semibold">Время</h2>
+          </div>
+          {daysWithDates.map((day) => (
+            <div
+              key={day.id}
+              className={cn(
+                "flex flex-col items-center justify-center border p-4 rounded-lg transition-colors",
+                isToday(day.fullDate)
+                  ? "bg-primary text-primary-foreground border-primary shadow-md transform scale-[1.02]"
+                  : "bg-slate-100 dark:bg-gray-900"
+              )}
+            >
+              <h2 className="text-sm sm:text-lg font-semibold">{day.label}</h2>
+              <h2 className="text-xs sm:text-sm">{day.date}</h2>
+            </div>
+          ))}
+        </div>
+
+        {
+          TIME_SLOTS.map((timeSlot) => (
+            <div
+              key={timeSlot}
+              className="grid grid-cols-1 md:grid-cols-[repeat(7,minmax(200px,1fr))] gap-4"
+            >
+              <div className="flex items-center justify-center border text-slate-500 dark:text-slate-50 bg-slate-100 dark:bg-gray-900 p-4 rounded-lg font-black text-sm sm:text-2xl">
+                {timeSlot}
+              </div>
+
+              {daysWithDates.map((day, index) => {
                 const lessons = filteredData.filter(
                   (item) =>
                     item.time === timeSlot &&
                     item.dayOfWeek
                       .toLowerCase()
                       .includes(day.label.toLowerCase()) &&
-                    isWithinInterval(
-                      parse(item.date, "dd.MM.yyyy", new Date()),
-                      {
-                        start: getCurrentWeekDates().start,
-                        end: getCurrentWeekDates().end,
-                      }
-                    )
+                    isWithinInterval(parse(item.date, "dd.MM.yyyy", new Date()), {
+                      start: getCurrentWeekDates().start,
+                      end: getCurrentWeekDates().end,
+                    })
                 );
 
                 const isActive = isLessonActive(timeSlot, day.fullDate);
 
                 return lessons.length > 0 ? (
-                  <Drawer key={`${day.label}-${day.date}-${timeSlot}`} shouldScaleBackground={false}>
-                    <DrawerTrigger asChild>
+                  <Dialog key={`${day.id}-${timeSlot}`}>
+                    <DialogTrigger asChild>
                       <div
                         className={cn(
-                          "p-3 border rounded-lg flex flex-col justify-between cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring transition-all duration-300 relative overflow-hidden",
-                          isActive && "border-green-500 ring-1 ring-green-500/10 shadow bg-green-50/50 dark:bg-green-900/10"
+                          "p-3 border rounded-lg flex flex-col justify-between h-full cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring transition-all hover:bg-muted/50 relative overflow-hidden",
+                          isActive && "border-green-500 ring-1 ring-green-500/10 shadow-sm bg-green-50/50 dark:bg-green-900/10 z-10 scale-[1.02]"
                         )}
                         onClick={() => handleLessonClick(lessons[0])}
                         role="button"
@@ -724,63 +888,60 @@ export function ScheduleView({ scheduleData, initialGroup, initialTeacher }: Sch
                         }}
                       >
                         <div className="space-y-1 leading-relaxed">
-                          <div className="font-semibold text-sm pr-6">
-                            <span>{lessons[0].subject}</span>
+                          <div className="font-semibold text-sm pr-16 relative">
+                            <span className="flex-1">{lessons[0].subject}</span>
                             {lessons.length > 1 && (
-                              <span className="absolute top-2 right-2 text-[10px] font-medium text-primary bg-background/90 px-1.5 py-0.5 rounded-lg border shadow-sm">
-                                +{lessons.length - 1} {getDeclension(lessons.length - 1, ["занятие", "занятия", "занятий"])}
+                              <span className="absolute -top-1 -right-1 text-[10px] font-medium text-primary bg-background/90 px-1.5 py-0.5 rounded-lg border shadow-sm pointer-events-none">
+                                +{lessons.length - 1}{" "}
+                                {getDeclension(lessons.length - 1, [
+                                  "занятие",
+                                  "занятия",
+                                  "занятий",
+                                ])}
                               </span>
                             )}
                           </div>
                           <div className="text-xs">{lessons[0].lessonType}</div>
                         </div>
-                        <div className="mt-4 space-y-1 flex-grow flex flex-col">
-                          <div className="flex flex-row items-center justify-end space-x-2">
+                        <div className="mt-4 space-y-1">
+                          <div className="flex items-center justify-end space-x-2">
                             <span className="text-xs text-right font-bold text-muted-foreground">
                               {lessons[0].group}
                             </span>
                           </div>
-                          <div className="flex flex-row items-center justify-end space-x-2">
+                          <div className="flex items-center justify-end space-x-2">
                             <span className="text-xs text-right">
                               {lessons[0].teacher}
                             </span>
                           </div>
-                          <div className="flex items-center justify-between space-x-2 mt-auto">
-                            <div className="flex flex-col items-start gap-1">
-                              {isActive && (
-                                <Badge key="mobile-badge-bottom" variant="default" className="animate-pulse bg-green-600 hover:bg-green-700 text-white border-none px-1.5 py-0 text-[10px] h-5 shrink-0">Сейчас</Badge>
-                              )}
-                              <div className="flex items-center justify-start space-x-2">
-                                <Clock className="h-4 w-4" />
-                                <span className="text-xs text-left font-bold">
-                                  {lessons[0].time}
-                                </span>
-                              </div>
-                            </div>
-                            <div className="flex items-center justify-end space-x-2">
-                              <MapPin className="h-4 w-4" />
-                              <span className="text-xs text-right">
-                                {lessons[0].classroom}
-                              </span>
-                            </div>
+                          <div className="flex items-center justify-end space-x-2">
+                            <MapPin className="h-4 w-4" />
+                            <span className="text-xs text-right">
+                              ауд. {lessons[0].classroom}
+                            </span>
                           </div>
+                          {isActive && (
+                            <div className="absolute bottom-2 left-2">
+                              <Badge key="desktop-badge-bottom" variant="default" className="animate-pulse bg-green-600 hover:bg-green-700 text-white border-none px-1.5 py-0 text-[10px] h-5">Сейчас</Badge>
+                            </div>
+                          )}
                         </div>
                       </div>
-                    </DrawerTrigger>
-                    <DrawerContent>
-                      <div className="overflow-y-auto max-h-[calc(95vh-5rem)] px-4 pb-4">
-                        <DrawerHeader className="pt-10">
-                          <DrawerTitle className="text-center font-semibold text-base mt-4">
+                    </DialogTrigger>
+                    <DialogContent className="p-6 rounded-lg shadow-lg animate-fade-in">
+                      <div className="overflow-y-auto max-h-[calc(95vh-5rem)] flex flex-col gap-4 items-center">
+                        <DialogHeader>
+                          <DialogTitle className="text-center text-base font-semibold mt-6">
                             {lessons[0].subject}
-                          </DrawerTitle>
-                          <DrawerDescription className="sr-only">
-                            Детальная информация о занятии: время, аудитория и преподаватель
-                          </DrawerDescription>
-                        </DrawerHeader>
+                          </DialogTitle>
+                          <DialogDescription className="sr-only">
+                            Детальная информация о занятии
+                          </DialogDescription>
+                        </DialogHeader>
                         {lessons.map((lesson, lessonIndex) => (
                           <div
                             key={`${lesson.date}-${lesson.time}-${lesson.subject}-${lessonIndex}`}
-                            className="flex flex-col gap-0.5 divide-y divide-dashed"
+                            className="w-full max-w-lg rounded-md px-5 py-3 divide-y divide-dashed"
                           >
                             {lessonIndex > 0 && (
                               <div className="text-center font-semibold my-4">
@@ -829,7 +990,7 @@ export function ScheduleView({ scheduleData, initialGroup, initialTeacher }: Sch
                                 </div>
                                 <Badge
                                   variant="outline"
-                                  className="px-3 py-1 rounded-lg"
+                                  className="px-3 py-1 rounded-full"
                                 >
                                   {label}
                                 </Badge>
@@ -838,206 +999,23 @@ export function ScheduleView({ scheduleData, initialGroup, initialTeacher }: Sch
                           </div>
                         ))}
                       </div>
-                    </DrawerContent>
-                  </Drawer>
-                ) : null;
+                    </DialogContent>
+                  </Dialog>
+                ) : (
+                  <div
+                    key={`${day.id}-${timeSlot}`}
+                    className="flex items-center justify-center p-4 border text-inherit bg-slate-50 dark:bg-gray-950 rounded-lg border-dashed"
+                  >
+                    Нет занятий
+                  </div>
+                );
               })}
             </div>
-          );
-        })}
-      </div>
-      {/* Десктопная версия */}
-      <div className="hidden sm:block space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-[repeat(7,minmax(200px,1fr))] gap-4">
-          <div className="flex flex-col items-center justify-center border bg-slate-100 dark:bg-gray-900 p-4 rounded-lg">
-            <h2 className="text-sm sm:text-lg font-semibold">Время</h2>
-          </div>
-          {daysWithDates.map((day) => (
-            <div
-              key={day.id}
-              className={cn(
-                "flex flex-col items-center justify-center border p-4 rounded-lg transition-colors",
-                isToday(day.fullDate)
-                  ? "bg-primary text-primary-foreground border-primary shadow-md transform scale-[1.02]"
-                  : "bg-slate-100 dark:bg-gray-900"
-              )}
-            >
-              <h2 className="text-sm sm:text-lg font-semibold">{day.label}</h2>
-              <h2 className="text-xs sm:text-sm">{day.date}</h2>
-            </div>
-          ))}
-        </div>
-
-        {TIME_SLOTS.map((timeSlot) => (
-          <div
-            key={timeSlot}
-            className="grid grid-cols-1 md:grid-cols-[repeat(7,minmax(200px,1fr))] gap-4"
-          >
-            <div className="flex items-center justify-center border text-slate-500 dark:text-slate-50 bg-slate-100 dark:bg-gray-900 p-4 rounded-lg font-black text-sm sm:text-2xl">
-              {timeSlot}
-            </div>
-
-            {daysWithDates.map((day, index) => {
-              const lessons = filteredData.filter(
-                (item) =>
-                  item.time === timeSlot &&
-                  item.dayOfWeek
-                    .toLowerCase()
-                    .includes(day.label.toLowerCase()) &&
-                  isWithinInterval(parse(item.date, "dd.MM.yyyy", new Date()), {
-                    start: getCurrentWeekDates().start,
-                    end: getCurrentWeekDates().end,
-                  })
-              );
-
-              const isActive = isLessonActive(timeSlot, day.fullDate);
-
-              return lessons.length > 0 ? (
-                <Dialog key={`${day.id}-${timeSlot}`}>
-                  <DialogTrigger asChild>
-                    <div
-                      className={cn(
-                        "p-3 border rounded-lg flex flex-col justify-between h-full cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring transition-all hover:bg-muted/50 relative overflow-hidden",
-                        isActive && "border-green-500 ring-1 ring-green-500/10 shadow-sm bg-green-50/50 dark:bg-green-900/10 z-10 scale-[1.02]"
-                      )}
-                      onClick={() => handleLessonClick(lessons[0])}
-                      role="button"
-                      tabIndex={0}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault();
-                          handleLessonClick(lessons[0]);
-                        }
-                      }}
-                    >
-                      <div className="space-y-1 leading-relaxed">
-                        <div className="font-semibold text-sm pr-16 relative">
-                          <span className="flex-1">{lessons[0].subject}</span>
-                          {lessons.length > 1 && (
-                            <span className="absolute -top-1 -right-1 text-[10px] font-medium text-primary bg-background/90 px-1.5 py-0.5 rounded-lg border shadow-sm pointer-events-none">
-                              +{lessons.length - 1}{" "}
-                              {getDeclension(lessons.length - 1, [
-                                "занятие",
-                                "занятия",
-                                "занятий",
-                              ])}
-                            </span>
-                          )}
-                        </div>
-                        <div className="text-xs">{lessons[0].lessonType}</div>
-                      </div>
-                      <div className="mt-4 space-y-1">
-                        <div className="flex items-center justify-end space-x-2">
-                          <span className="text-xs text-right font-bold text-muted-foreground">
-                            {lessons[0].group}
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-end space-x-2">
-                          <span className="text-xs text-right">
-                            {lessons[0].teacher}
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-end space-x-2">
-                          <MapPin className="h-4 w-4" />
-                          <span className="text-xs text-right">
-                            ауд. {lessons[0].classroom}
-                          </span>
-                        </div>
-                        {isActive && (
-                          <div className="absolute bottom-2 left-2">
-                            <Badge key="desktop-badge-bottom" variant="default" className="animate-pulse bg-green-600 hover:bg-green-700 text-white border-none px-1.5 py-0 text-[10px] h-5">Сейчас</Badge>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </DialogTrigger>
-                  <DialogContent className="p-6 rounded-lg shadow-lg animate-fade-in">
-                    <div className="overflow-y-auto max-h-[calc(95vh-5rem)] flex flex-col gap-4 items-center">
-                      <DialogHeader>
-                        <DialogTitle className="text-center text-base font-semibold mt-6">
-                          {lessons[0].subject}
-                        </DialogTitle>
-                        <DialogDescription className="sr-only">
-                          Детальная информация о занятии
-                        </DialogDescription>
-                      </DialogHeader>
-                      {lessons.map((lesson, lessonIndex) => (
-                        <div
-                          key={`${lesson.date}-${lesson.time}-${lesson.subject}-${lessonIndex}`}
-                          className="w-full max-w-lg rounded-md px-5 py-3 divide-y divide-dashed"
-                        >
-                          {lessonIndex > 0 && (
-                            <div className="text-center font-semibold my-4">
-                              {lesson.subject}
-                            </div>
-                          )}
-                          {[
-                            {
-                              icon: <FileText className="w-5 h-5" />,
-                              label: "Тип занятия",
-                              value: lesson.lessonType,
-                            },
-                            {
-                              icon: <User className="w-5 h-5" />,
-                              label: "Преподаватель",
-                              value: lesson.teacher,
-                            },
-                            {
-                              icon: <Users className="w-5 h-5" />,
-                              label: "Группа",
-                              value: lesson.group,
-                            },
-                            {
-                              icon: <MapPin className="w-5 h-5" />,
-                              label: "Аудитория",
-                              value: lesson.classroom,
-                            },
-                            {
-                              icon: <CalendarDays className="w-5 h-5" />,
-                              label: "Дата",
-                              value: lesson.date,
-                            },
-                            {
-                              icon: <Clock className="w-5 h-5" />,
-                              label: "Время",
-                              value: lesson.time,
-                            },
-                          ].map(({ icon, label, value }, index) => (
-                            <div
-                              key={index}
-                              className="flex items-center justify-between py-2 first:pt-0 last:pb-0"
-                            >
-                              <div className="flex items-center gap-2">
-                                {icon}
-                                <span className="text-left">{value}</span>
-                              </div>
-                              <Badge
-                                variant="outline"
-                                className="px-3 py-1 rounded-full"
-                              >
-                                {label}
-                              </Badge>
-                            </div>
-                          ))}
-                        </div>
-                      ))}
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              ) : (
-                <div
-                  key={`${day.id}-${timeSlot}`}
-                  className="flex items-center justify-center p-4 border text-inherit bg-slate-50 dark:bg-gray-950 rounded-lg border-dashed"
-                >
-                  Нет занятий
-                </div>
-              );
-            })}
-          </div>
-        ))}
-      </div>
+          ))
+        }
+      </div >
 
 
-    </div>
+    </div >
   );
 }

@@ -1,23 +1,24 @@
 import { ScheduleItem } from "@/types/schedule";
 
-export const DAYS_ORDER: Record<string, number> = {
-    "пн": 1, "понедельник": 1,
-    "вт": 2, "вторник": 2,
-    "ср": 3, "среда": 3,
-    "чт": 4, "четверг": 4,
-    "пт": 5, "пятница": 5,
-    "сб": 6, "суббота": 6,
-    "вс": 7, "воскресенье": 7,
-};
+// --- Data Constants ---
 
-export const DAYS_OF_WEEK = [
-    { id: "monday", label: "Пн" },
-    { id: "tuesday", label: "Вт" },
-    { id: "wednesday", label: "Ср" },
-    { id: "thursday", label: "Чт" },
-    { id: "friday", label: "Пт" },
-    { id: "saturday", label: "Сб" },
-];
+export const DAYS_DATA = [
+    { id: "monday", label: "Пн", full: "понедельник", order: 1 },
+    { id: "tuesday", label: "Вт", full: "вторник", order: 2 },
+    { id: "wednesday", label: "Ср", full: "среда", order: 3 },
+    { id: "thursday", label: "Чт", full: "четверг", order: 4 },
+    { id: "friday", label: "Пт", full: "пятница", order: 5 },
+    { id: "saturday", label: "Сб", full: "суббота", order: 6 },
+    { id: "sunday", label: "Вс", full: "воскресенье", order: 7 },
+] as const;
+
+export const DAYS_OF_WEEK = DAYS_DATA.slice(0, 6).map(d => ({ id: d.id, label: d.label }));
+
+export const DAYS_ORDER: Record<string, number> = DAYS_DATA.reduce((acc, day) => {
+    acc[day.label.toLowerCase()] = day.order;
+    acc[day.full.toLowerCase()] = day.order;
+    return acc;
+}, {} as Record<string, number>);
 
 export const TIME_SLOTS = [
     "08.30 - 10.00",
@@ -29,6 +30,8 @@ export const TIME_SLOTS = [
     "18.50 - 20.20",
     "20.30 - 22.00",
 ];
+
+// --- UI Configuration ---
 
 export const PAGE_SIZE_OPTIONS = [10, 25, 50] as const;
 export const DEFAULT_PAGE_SIZE = 25;
@@ -44,9 +47,8 @@ export const TABLE_COLUMNS: { key: keyof ScheduleItem; label: string; className?
     { key: "classroom", label: "Аудитория" },
 ];
 
-export const STORAGE_KEYS = {
-    SELECTED_GROUP: "selectedGroup",
-    SELECTED_TEACHER: "selectedTeacher",
+export const BREAKPOINTS = {
+    SM: 640,
 } as const;
 
 export const DATE_FORMATS = {
@@ -54,8 +56,11 @@ export const DATE_FORMATS = {
     SHORT: "dd.MM",
 } as const;
 
-export const BREAKPOINTS = {
-    SM: 640,
+// --- Application Config ---
+
+export const STORAGE_KEYS = {
+    SELECTED_GROUP: "selectedGroup",
+    SELECTED_TEACHER: "selectedTeacher",
 } as const;
 
 export const API_ENDPOINTS = {

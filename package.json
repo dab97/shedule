@@ -1,10 +1,10 @@
 {
   "name": "rgsu",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "scripts": {
-    "dev": "next dev --webpack",
-    "build": "next build --webpack",
+    "dev": "node scripts/sync-version.js && next dev -H 0.0.0.0 --webpack",
+    "build": "node scripts/sync-version.js && next build --webpack",
     "start": "next start",
     "lint": "next lint"
   },
@@ -36,7 +36,7 @@
     "jspdf-autotable": "^5.0.2",
     "lucide-react": "^0.462.0",
     "motion": "^11.13.1",
-    "next": "^16.1.4",
+    "next": "^16.1.6",
     "next-themes": "^0.4.6",
     "path": "^0.12.7",
     "qrcode.react": "^4.1.0",
