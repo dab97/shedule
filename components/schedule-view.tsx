@@ -675,7 +675,7 @@ export function ScheduleView({ scheduleData, initialGroup, initialTeacher }: Sch
                 return sortedGroupKeys.map((key, index) => {
                   const groupLessons = groupedLessons[key].sort((a, b) => a.group.localeCompare(b.group));
                   const primaryLesson = groupLessons[0];
-                  const isActive = isLessonActive(primaryLesson.time, format(date, DATE_FORMATS.SHORT));
+                  const isActive = isLessonActive(primaryLesson.time, format(date, DATE_FORMATS.FULL));
                   const isGrouped = groupLessons.length > 1;
 
                   return (
@@ -684,7 +684,7 @@ export function ScheduleView({ scheduleData, initialGroup, initialTeacher }: Sch
                         <Card
                           className={cn(
                             "rounded-xl shadow-sm relative overflow-hidden active:scale-[0.98] transition-transform cursor-pointer",
-                            isActive && "border-primary ring-1 ring-primary/20 shadow-md bg-primary/5"
+                            isActive && "border-primary ring-1 ring-primary/10 shadow-md bg-primary/5"
                           )}
                           onClick={() => handleLessonClick(primaryLesson)}
                         >
@@ -693,7 +693,7 @@ export function ScheduleView({ scheduleData, initialGroup, initialTeacher }: Sch
                             <div className={cn(
                               "absolute right-3 px-2.5 py-1 rounded-full text-xs font-semibold shadow-sm z-10",
                               isActive ? "top-9" : "top-3",
-                              "bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 border border-blue-200"
+                              "bg-primary/5 text-primary dark:bg-blue-900/30 dark:text-blue-300 border border-blue-200"
                             )}>
                               {groupLessons.length} {getDeclension(groupLessons.length, ['группа', 'группы', 'групп'])}
                             </div>
@@ -701,12 +701,12 @@ export function ScheduleView({ scheduleData, initialGroup, initialTeacher }: Sch
 
                           {/* Индикатор текущего урока */}
                           {isActive && (
-                            <div className="absolute top-0 right-0 px-2 py-1 bg-primary text-primary-foreground text-[10px] font-bold rounded-bl-lg z-10">
+                            <div className="absolute top-0 right-0 px-2 py-1 bg-primary/90 text-primary-foreground text-xs font-bold rounded-bl-lg z-10">
                               СЕЙЧАС
                             </div>
                           )}
 
-                          <CardContent className="p-4 space-y-3">
+                          <CardContent className="p-4 space-y-2">
                             {/* Заголовок и Тип занятия */}
                             <div className={cn("flex flex-col", isGrouped ? "pr-24" : "pr-4")}>
                               <h3 className="font-bold text-base leading-tight mb-1.5">
@@ -719,7 +719,7 @@ export function ScheduleView({ scheduleData, initialGroup, initialTeacher }: Sch
                             </div>
 
                             {/* Контекстная информация: Преподаватель или Группа */}
-                            <div className="flex items-center gap-1.5 justify-end text-sm text-muted-foreground w-full">
+                            <div className="flex items-center gap-1.5 justify-end text-sm text-muted-foreground w-full pt-2">
                               {selectedTeacher !== "all" ? (
                                 <>
                                   <Users className="h-3.5 w-3.5 shrink-0" />
@@ -738,7 +738,7 @@ export function ScheduleView({ scheduleData, initialGroup, initialTeacher }: Sch
                             </div>
 
                             {/* Футер: Время и Аудитория */}
-                            <div className="flex items-center justify-between pt-3 border-t border-dashed">
+                            <div className="flex items-center justify-between pt-2 border-t border-dashed">
                               <div className="flex items-center gap-2 font-mono text-base font-semibold">
                                 <Clock className="h-4 w-4 text-primary" />
                                 {primaryLesson.time}
