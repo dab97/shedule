@@ -9,6 +9,10 @@ const config: Config = {
 	],
 	theme: {
 		extend: {
+			fontSize: {
+				'xxs': '0.625rem',  // 10px
+				'tiny': '0.6875rem', // 11px
+			},
 			fontFamily: {
 				sans: ["-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "Helvetica Neue", "Arial", "sans-serif"],
 				mono: ["ui-monospace", "SFMono-Regular", "Menlo", "Monaco", "Consolas"],

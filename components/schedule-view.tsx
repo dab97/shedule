@@ -890,10 +890,10 @@ export function ScheduleView({ scheduleData, initialGroup, initialTeacher }: Sch
                         }}
                       >
                         <div className="space-y-1 leading-relaxed">
-                          <div className="font-semibold text-sm pr-16 relative">
+                          <div className="font-semibold text-sm pr-4 relative">
                             <span className="flex-1">{lessons[0].subject}</span>
                             {lessons.length > 1 && (
-                              <span className="absolute -top-1 -right-1 text-[10px] font-medium text-primary bg-background/90 px-1.5 py-0.5 rounded-lg border shadow-sm pointer-events-none">
+                              <span className="absolute -top-1 -right-1 text-xxs font-medium text-primary bg-background/90 px-1.5 py-0.5 rounded-lg border shadow-sm pointer-events-none">
                                 +{lessons.length - 1}{" "}
                                 {getDeclension(lessons.length - 1, [
                                   "занятие",
