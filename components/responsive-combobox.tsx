@@ -40,6 +40,7 @@ interface ResponsiveComboBoxProps {
     searchPlaceholder?: string;
     emptyText?: string;
     renderItem?: (item: Item, isSelected: boolean) => React.ReactNode;
+    id?: string;
 }
 
 export function ResponsiveComboBox({
@@ -50,6 +51,7 @@ export function ResponsiveComboBox({
     searchPlaceholder = "Поиск...",
     emptyText = "Ничего не найдено",
     renderItem,
+    id,
 }: ResponsiveComboBoxProps) {
     const [open, setOpen] = React.useState(false);
     const [isDesktop, setIsDesktop] = React.useState(true);
@@ -111,6 +113,7 @@ export function ResponsiveComboBox({
             <Popover open={open} onOpenChange={setOpen} modal={false}>
                 <PopoverTrigger asChild>
                     <Button
+                        id={id}
                         variant="outline"
                         role="combobox"
                         aria-expanded={open}
@@ -122,7 +125,7 @@ export function ResponsiveComboBox({
                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-[200px] p-0" align="start">
+                <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
                     {Content}
                 </PopoverContent>
             </Popover>
@@ -133,6 +136,7 @@ export function ResponsiveComboBox({
         <Drawer open={open} onOpenChange={setOpen} shouldScaleBackground={false}>
             <DrawerTrigger asChild>
                 <Button
+                    id={id}
                     variant="outline"
                     role="combobox"
                     aria-expanded={open}

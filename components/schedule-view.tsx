@@ -296,8 +296,9 @@ export function ScheduleView({ scheduleData, initialGroup, initialTeacher }: Sch
     <div className="container mx-auto p-2 sm:p-4 space-y-3 sm:space-y-6 overflow-x-auto">
       <div className="flex flex-col sm:flex-row gap-2 sm:gap-6">
         <div className="w-full sm:w-56 space-y-2">
-          <label className="text-sm font-medium hidden sm:block">Группа</label>
+          <label htmlFor="group-select" className="text-sm font-medium hidden sm:block">Группа</label>
           <ResponsiveComboBox
+            id="group-select"
             items={[
               { value: "all", label: "Все группы" },
               ...uniqueGroups.sort((a, b) => a.localeCompare(b)).map(g => ({ value: g, label: g }))
@@ -353,8 +354,9 @@ export function ScheduleView({ scheduleData, initialGroup, initialTeacher }: Sch
         </div>
 
         <div className="w-full sm:w-80 space-y-2">
-          <label className="text-sm font-medium hidden sm:block">Преподаватель</label>
+          <label htmlFor="teacher-select" className="text-sm font-medium hidden sm:block">Преподаватель</label>
           <ResponsiveComboBox
+            id="teacher-select"
             items={[
               { value: "all", label: "Все преподаватели" },
               ...uniqueTeachers.sort((a, b) => a.localeCompare(b)).map(t => ({ value: t, label: t }))
