@@ -6,9 +6,7 @@ const withPWA = withPWAInit({
     aggressiveFrontEndNavCaching: true,
     reloadOnOnline: true,
     swcMinify: true,
-    customWorkerSrc: "public",
-    customWorkerDest: "public",
-    customWorkerPrefix: "custom-sw",
+    customWorkerSrc: "worker",
     workboxOptions: {
         disableDevLogs: true,
     },
@@ -18,3 +16,4 @@ const withPWA = withPWAInit({
 const nextConfig = {};
 
 export default withPWA(nextConfig);
+
