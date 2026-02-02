@@ -446,7 +446,7 @@ function SessionLog() {
                     <CardDescription>Показаны последние 50 записей об изменениях</CardDescription>
                 </div>
                 <Button variant="destructive" size="sm" onClick={handleClear}>
-                    <Trash2 className="h-4 w-4 mr-2" />
+                    <Trash2 className="h-4 w-4" />
                     Очистить
                 </Button>
             </CardHeader>

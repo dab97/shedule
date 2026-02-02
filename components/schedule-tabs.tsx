@@ -1,10 +1,12 @@
 'use client'
 
+import { useMemo } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ScheduleView } from './schedule-view'
 import ScheduleTable from '@/components/ScheduleTable'
 import { ScheduleItem } from '../types/schedule'
 import { Skeleton } from "@/components/ui/skeleton"
+import { NotificationSettings } from "@/components/NotificationSettings"
 
 interface ScheduleTabsProps {
   scheduleData: ScheduleItem[],
@@ -14,21 +16,37 @@ interface ScheduleTabsProps {
 }
 
 export function ScheduleTabs({ scheduleData, isLoading, initialGroup, initialTeacher }: ScheduleTabsProps) {
+  // Извлекаем уникальные группы и преподавателей для передачи в NotificationSettings
+  const uniqueGroups = useMemo(() => Array.from(
+    new Set(scheduleData.map((item) => item.group))
+  ).sort(), [scheduleData]);
+
+  const uniqueTeachers = useMemo(() => Array.from(
+    new Set(scheduleData.map((item) => item.teacher))
+  ).sort(), [scheduleData]);
+
   return (
     <Tabs defaultValue="calendar" className="container mx-auto">
-      <TabsList className="grid max-w-xs sm:max-w-sm my-10 mx-auto grid-cols-2">
-        {isLoading ? (
-          <>
-            <Skeleton className="h-8 w-full rounded-md" />
-            <Skeleton className="h-8 w-full rounded-md" />
-          </>
-        ) : (
-          <>
-            <TabsTrigger value="calendar">Календарь</TabsTrigger>
-            <TabsTrigger value="table">Таблица</TabsTrigger>
-          </>
+      <div className="flex items-center justify-center gap-2 my-10">
+        <TabsList className="grid max-w-xs sm:max-w-sm grid-cols-2">
+          {isLoading ? (
+            <>
+              <Skeleton className="h-8 w-full rounded-md" />
+              <Skeleton className="h-8 w-full rounded-md" />
+            </>
+          ) : (
+            <>
+              <TabsTrigger value="calendar">Календарь</TabsTrigger>
+              <TabsTrigger value="table">Таблица</TabsTrigger>
+            </>
+          )}
+        </TabsList>
+
+        {/* Кнопка уведомлений */}
+        {!isLoading && (
+          <NotificationSettings groups={uniqueGroups} teachers={uniqueTeachers} />
         )}
-      </TabsList>
+      </div>
 
       <TabsContent value="calendar">
         {isLoading ? (

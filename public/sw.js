@@ -22,27 +22,27 @@ if (!self.define) {
   const singleRequire = (uri, parentUri) => {
     uri = new URL(uri + ".js", parentUri).href;
     return registry[uri] || (
-      
-        new Promise(resolve => {
-          if ("document" in self) {
-            const script = document.createElement("script");
-            script.src = uri;
-            script.onload = resolve;
-            document.head.appendChild(script);
-          } else {
-            nextDefineUri = uri;
-            importScripts(uri);
-            resolve();
-          }
-        })
-      
-      .then(() => {
-        let promise = registry[uri];
-        if (!promise) {
-          throw new Error(`Module ${uri} didn’t register its module`);
+
+      new Promise(resolve => {
+        if ("document" in self) {
+          const script = document.createElement("script");
+          script.src = uri;
+          script.onload = resolve;
+          document.head.appendChild(script);
+        } else {
+          nextDefineUri = uri;
+          importScripts(uri);
+          resolve();
         }
-        return promise;
       })
+
+        .then(() => {
+          let promise = registry[uri];
+          if (!promise) {
+            throw new Error(`Module ${uri} didn’t register its module`);
+          }
+          return promise;
+        })
     );
   };
 
@@ -67,7 +67,8 @@ if (!self.define) {
     });
   };
 }
-define(['./workbox-7144475a'], (function (workbox) { 'use strict';
+define(['./workbox-7144475a'], (function (workbox) {
+  'use strict';
 
   importScripts();
   self.skipWaiting();
@@ -91,3 +92,75 @@ define(['./workbox-7144475a'], (function (workbox) { 'use strict';
   self.__WB_DISABLE_DEV_LOGS = true;
 
 }));
+
+// === Push Notification Handlers ===
+
+// Обработчик push-уведомлений
+self.addEventListener('push', (event) => {
+  if (!event.data) {
+    console.log('[SW] Push received but no data');
+    return;
+  }
+
+  try {
+    const payload = event.data.json();
+
+    const options = {
+      body: payload.body || 'Расписание было обновлено',
+      icon: payload.icon || '/favicon.png',
+      badge: payload.badge || '/favicon.png',
+      tag: payload.tag || 'schedule-update',
+      vibrate: [100, 50, 100],
+      data: payload.data || {},
+      actions: [
+        { action: 'open', title: 'Открыть' },
+        { action: 'dismiss', title: 'Закрыть' },
+      ],
+      requireInteraction: false,
+    };
+
+    event.waitUntil(
+      self.registration.showNotification(
+        payload.title || 'Расписание РГСУ',
+        options
+      )
+    );
+  } catch (error) {
+    console.error('[SW] Error processing push:', error);
+  }
+});
+
+// Обработчик клика по уведомлению
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+
+  if (event.action === 'dismiss') {
+    return;
+  }
+
+  const urlToOpen = event.notification.data?.url || '/';
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if (client.url.includes(self.location.origin) && 'focus' in client) {
+          client.focus();
+          client.postMessage({
+            type: 'SCHEDULE_UPDATE',
+            data: event.notification.data,
+          });
+          return;
+        }
+      }
+      if (clients.openWindow) {
+        return clients.openWindow(urlToOpen);
+      }
+    })
+  );
+});
+
+// Обработчик закрытия уведомления
+self.addEventListener('notificationclose', (event) => {
+  console.log('[SW] Notification closed:', event.notification.tag);
+});
+
