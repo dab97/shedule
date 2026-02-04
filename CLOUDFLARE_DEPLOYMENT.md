@@ -77,14 +77,27 @@ Cloudflare автоматически определит настройки дл
 **Обязательные переменные** (примеры, используйте свои значения):
 
 ```
+# URL сайта (обновите после первого деплоя)
 NEXT_PUBLIC_SITE_URL=https://rgsu-schedule.pages.dev
+
+# Upstash Redis (для хранения данных)
 UPSTASH_REDIS_REST_URL=your_upstash_url
 UPSTASH_REDIS_REST_TOKEN=your_upstash_token
+
+# Или альтернативно KV (если используете)
+KV_REST_API_URL=your_kv_url
+KV_REST_API_TOKEN=your_kv_token
+
+# Google Service Account (для доступа к Google Sheets)
 GOOGLE_CLIENT_EMAIL=your_service_account_email
 GOOGLE_PRIVATE_KEY=your_private_key
-GOOGLE_SPREADSHEET_ID=your_spreadsheet_id
+
+# VAPID ключи (для push-уведомлений)
 VAPID_PUBLIC_KEY=your_vapid_public_key
 VAPID_PRIVATE_KEY=your_vapid_private_key
+NEXT_PUBLIC_VAPID_PUBLIC_KEY=your_vapid_public_key
+
+# Gemini AI (для чата в debug режиме)
 GEMINI_API_KEY=your_gemini_api_key
 ```
 
