@@ -59,12 +59,16 @@ npm run build
 
 ### 3.2 Build Settings
 
-Cloudflare автоматически определит настройки для Next.js, но проверьте:
+Cloudflare автоматически определит настройки для Next.js. **Важно**: убедитесь, что настройки следующие:
 
 - **Build command**: `npm run build`
-- **Build output directory**: `.vercel/output/static`
+- **Build output directory**: `.next` (Cloudflare Pages автоматически адаптирует Next.js)
 
-> **Важно**: Next.js на Cloudflare Pages использует статический экспорт. Некоторые серверные функции могут работать иначе.
+> **Важно**: Cloudflare Pages автоматически обрабатывает Next.js проекты. Не нужно указывать `.vercel/output/static` - это было ошибкой в первоначальной конфигурации.
+
+### 3.3 Удаление Deploy Command (Если есть)
+
+В разделе **Build settings**, если есть поле **Deploy command**, оставьте его **пустым**. Cloudflare Pages автоматически деплоит проект после сборки.
 
 ## Шаг 4: Настройка Переменных Окружения
 
