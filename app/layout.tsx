@@ -36,11 +36,7 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
-  icons: {
-    icon: '/favicon.png',
-    apple: '/favicon.png',
-  },
-  manifest: '/manifest.json',
+  /* icons handled automatically by file-system conventions */
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',

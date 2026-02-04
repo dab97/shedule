@@ -294,8 +294,8 @@ export function ScheduleView({ scheduleData, initialGroup, initialTeacher }: Sch
 
   return (
     <div className="container mx-auto p-2 sm:p-4 space-y-3 sm:space-y-6 overflow-x-auto">
-      <div className="flex flex-col sm:flex-row gap-2 sm:gap-6">
-        <div className="w-full sm:w-56 space-y-2">
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-6 items-start">
+        <div className="w-full sm:w-56 flex flex-col gap-2">
           <label htmlFor="group-select" className="text-sm font-medium hidden sm:block">Группа</label>
           <ResponsiveComboBox
             id="group-select"
@@ -353,7 +353,7 @@ export function ScheduleView({ scheduleData, initialGroup, initialTeacher }: Sch
           )}
         </div>
 
-        <div className="w-full sm:w-80 space-y-2">
+        <div className="w-full sm:w-80 flex flex-col gap-2">
           <label htmlFor="teacher-select" className="text-sm font-medium hidden sm:block">Преподаватель</label>
           <ResponsiveComboBox
             id="teacher-select"
@@ -411,7 +411,7 @@ export function ScheduleView({ scheduleData, initialGroup, initialTeacher }: Sch
           )}
         </div>
 
-        <div className="hidden sm:block w-full sm:w-64 space-y-2">
+        <div className="hidden sm:flex w-full sm:w-64 flex-col gap-2">
           <label className="text-sm font-medium">Неделя</label>
           {/* Мобильная версия - Drawer */}
           <div className="block sm:hidden">
