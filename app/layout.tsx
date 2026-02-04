@@ -1,6 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import { Analytics } from "@vercel/analytics/react";
-import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
@@ -51,7 +49,7 @@ export const metadata: Metadata = {
   formatDetection: {
     telephone: false,
   },
-  metadataBase: new URL('https://shedule-rgsu.vercel.app'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://rgsu-schedule.pages.dev'),
   alternates: {
     canonical: '/',
   },
@@ -92,8 +90,6 @@ export default function RootLayout({
           {children}
           <Toaster richColors position="top-center" />
         </ThemeProvider>
-        <Analytics />
-        <SpeedInsights />
 
       </body>
     </html>
