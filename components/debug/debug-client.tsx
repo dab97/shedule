@@ -189,6 +189,26 @@ function VirtualizedTable({
         return <ArrowUpDown className="h-4 w-4 text-muted-foreground" />;
     };
 
+    if (tableData.length === 0) {
+        return (
+            <div className="flex flex-col items-center justify-center p-8 text-muted-foreground border-2 border-dashed rounded-lg min-h-[300px]">
+                {visibilityFilter === 'invisible' ? (
+                    <>
+                        <CheckCircle className="h-10 w-10 mb-4 text-green-500/50" />
+                        <p className="font-medium text-lg text-foreground">Отличная работа!</p>
+                        <p className="text-sm">Скрытых записей не обнаружено. Всё расписание отображается корректно.</p>
+                    </>
+                ) : (
+                    <>
+                        <Table2 className="h-10 w-10 mb-4 opacity-30" />
+                        <p className="font-medium">Список пуст</p>
+                        <p className="text-sm">По выбранным критериям записей не найдено.</p>
+                    </>
+                )}
+            </div>
+        );
+    }
+
     return (
         <div className="w-full text-sm">
             {/* Заголовок таблицы */}
@@ -542,9 +562,7 @@ export default function DebugClient() {
             refreshInterval: REFRESH_INTERVAL, // Обновляем данные автоматически
         }
     );
-    const [showDetails, setShowDetails] = useState(false);
-    const [isTableReady, setIsTableReady] = useState(false);
-    const [isPending, startTransition] = useTransition();
+
     const [showAllDuplicates, setShowAllDuplicates] = useState(false);
     const [showAllInvisible, setShowAllInvisible] = useState(false);
 
@@ -584,21 +602,9 @@ export default function DebugClient() {
         }
     }, [schedule]);
 
-    // Обработчик показа таблицы с отложенным рендерингом
-    const handleToggleDetails = () => {
-        if (!showDetails) {
-            setShowDetails(true);
-            startTransition(() => {
-                setIsTableReady(true);
-            });
-        } else {
-            setShowDetails(false);
-            setIsTableReady(false);
-        }
-    };
 
     // Фильтр и сортировка таблицы
-    const [visibilityFilter, setVisibilityFilter] = useState<'all' | 'visible' | 'invisible'>('all');
+    const [visibilityFilter, setVisibilityFilter] = useState<'all' | 'visible' | 'invisible'>('invisible');
     const [sortField, setSortField] = useState<'group' | 'date' | 'teacher' | 'time' | null>(null);
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
@@ -1216,75 +1222,39 @@ export default function DebugClient() {
                             <CardTitle className="flex items-center justify-between flex-wrap gap-2">
                                 <span>Полный список записей</span>
                                 <div className="flex items-center gap-2">
-                                    {showDetails && (
-                                        <div className="flex items-center gap-2">
-                                            <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
-                                            <Select
-                                                value={visibilityFilter}
-                                                onValueChange={(value: string) => setVisibilityFilter(value as 'all' | 'visible' | 'invisible')}
-                                            >
-                                                <SelectTrigger className="w-[180px] h-8 text-sm">
-                                                    <SelectValue placeholder="Все записи" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="all">Все записи</SelectItem>
-                                                    <SelectItem value="visible">Только видимые</SelectItem>
-                                                    <SelectItem value="invisible">Только невидимые</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
-                                    )}
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={handleToggleDetails}
-                                        disabled={isPending}
+                                    <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
+                                    <Select
+                                        value={visibilityFilter}
+                                        onValueChange={(value: string) => setVisibilityFilter(value as 'all' | 'visible' | 'invisible')}
                                     >
-                                        {isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                                        {isPending ? "Загрузка..." : showDetails ? "Скрыть" : "Показать"}
-                                    </Button>
+                                        <SelectTrigger className="w-[180px] h-8 text-sm">
+                                            <SelectValue placeholder="Все записи" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="all">Все записи</SelectItem>
+                                            <SelectItem value="visible">Только видимые</SelectItem>
+                                            <SelectItem value="invisible">Только невидимые</SelectItem>
+                                        </SelectContent>
+                                    </Select>
                                 </div>
                             </CardTitle>
                         </CardHeader>
-                        {showDetails && (
-                            <CardContent>
-                                {(isPending || !isTableReady) ? (
-                                    <div className="space-y-3 max-h-[calc(100vh-280px)] overflow-hidden">
-                                        <div className="flex items-center gap-4">
-                                            <Skeleton className="h-8 w-full" />
-                                        </div>
-                                        {Array.from({ length: 28 }).map((_, i) => (
-                                            <div key={i} className="flex items-center gap-4">
-                                                <Skeleton className="h-6 w-8" />
-                                                <Skeleton className="h-6 w-24" />
-                                                <Skeleton className="h-6 w-20" />
-                                                <Skeleton className="h-6 w-12" />
-                                                <Skeleton className="h-6 w-24" />
-                                                <Skeleton className="h-6 flex-1" />
-                                                <Skeleton className="h-6 w-32" />
-                                                <Skeleton className="h-6 w-12" />
-                                                <Skeleton className="h-6 w-6" />
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <VirtualizedTable
-                                        schedule={schedule || []}
-                                        stats={stats}
-                                        visibilityFilter={visibilityFilter}
-                                        sortField={sortField}
-                                        sortDirection={sortDirection}
-                                        setSortField={setSortField}
-                                        setSortDirection={setSortDirection}
-                                    />
-                                )}
-                                {visibilityFilter !== 'all' && (
-                                    <p className="text-sm text-muted-foreground mt-2">
-                                        Показано {visibilityFilter === 'invisible' ? stats?.invisibleRecords.length : (stats?.total || 0) - (stats?.invisibleRecords.length || 0)} из {stats?.total} записей
-                                    </p>
-                                )}
-                            </CardContent>
-                        )}
+                        <CardContent>
+                            <VirtualizedTable
+                                schedule={schedule || []}
+                                stats={stats}
+                                visibilityFilter={visibilityFilter}
+                                sortField={sortField}
+                                sortDirection={sortDirection}
+                                setSortField={setSortField}
+                                setSortDirection={setSortDirection}
+                            />
+                            {visibilityFilter !== 'all' && (
+                                <p className="text-sm text-muted-foreground mt-2">
+                                    Показано {visibilityFilter === 'invisible' ? stats?.invisibleRecords.length : (stats?.total || 0) - (stats?.invisibleRecords.length || 0)} из {stats?.total} записей
+                                </p>
+                            )}
+                        </CardContent>
                     </Card>
                 </TabsContent>
 

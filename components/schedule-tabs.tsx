@@ -3,7 +3,7 @@
 import { useMemo } from "react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ScheduleView } from './schedule-view'
-import ScheduleTable from '@/components/ScheduleTable'
+import VirtualScheduleTable from '@/components/VirtualScheduleTable'
 import { ScheduleItem } from '../types/schedule'
 import { Skeleton } from "@/components/ui/skeleton"
 import { NotificationSettings } from "@/components/NotificationSettings"
@@ -17,13 +17,22 @@ interface ScheduleTabsProps {
 
 export function ScheduleTabs({ scheduleData, isLoading, initialGroup, initialTeacher }: ScheduleTabsProps) {
   // Извлекаем уникальные группы и преподавателей для передачи в NotificationSettings
-  const uniqueGroups = useMemo(() => Array.from(
-    new Set(scheduleData.map((item) => item.group))
-  ).sort(), [scheduleData]);
+  // Оптимизация: один проход по массиву вместо двух
+  const { uniqueGroups, uniqueTeachers } = useMemo(() => {
+    const groups = new Set<string>();
+    const teachers = new Set<string>();
+    const data = Array.isArray(scheduleData) ? scheduleData : [];
 
-  const uniqueTeachers = useMemo(() => Array.from(
-    new Set(scheduleData.map((item) => item.teacher))
-  ).sort(), [scheduleData]);
+    data.forEach(item => {
+      if (item.group) groups.add(item.group);
+      if (item.teacher) teachers.add(item.teacher);
+    });
+
+    return {
+      uniqueGroups: Array.from(groups).sort(),
+      uniqueTeachers: Array.from(teachers).sort()
+    };
+  }, [scheduleData]);
 
   return (
     <Tabs defaultValue="calendar" className="container mx-auto">
@@ -63,8 +72,8 @@ export function ScheduleTabs({ scheduleData, isLoading, initialGroup, initialTea
         )}
       </TabsContent>
 
-      <TabsContent value="table">
-        <ScheduleTable scheduleData={scheduleData} isLoading={isLoading} />
+      <TabsContent value="table" className="h-[calc(100vh-220px)] min-h-[500px]">
+        <VirtualScheduleTable scheduleData={scheduleData} isLoading={isLoading} />
       </TabsContent>
     </Tabs>
   )

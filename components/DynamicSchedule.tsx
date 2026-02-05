@@ -120,7 +120,7 @@ export default function Home({ initialGroup, initialTeacher }: DynamicSchedulePr
 
   // Отслеживаем изменения в расписании
   useEffect(() => {
-    if (schedule && schedule.length > 0) {
+    if (schedule && Array.isArray(schedule) && schedule.length > 0) {
       if (isFirstLoadRef.current) {
         // Первая загрузка — просто сохраняем данные
         previousDataRef.current = [...schedule];
@@ -183,7 +183,7 @@ export default function Home({ initialGroup, initialTeacher }: DynamicSchedulePr
   }, [schedule]);
 
   // Отображаем ошибку, если есть
-  if (error) {
+  if (error || (schedule && !Array.isArray(schedule))) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background p-4">
         <motion.div
@@ -200,7 +200,7 @@ export default function Home({ initialGroup, initialTeacher }: DynamicSchedulePr
                 Ошибка загрузки расписания
               </AlertTitle>
               <AlertDescription className="text-sm opacity-90 leading-relaxed">
-                Не удалось загрузить данные. Проверьте подключение к интернету или попробуйте позже.
+                {(schedule as any)?.error || "Не удалось загрузить данные. Проверьте подключение к интернету или попробуйте позже."}
               </AlertDescription>
             </div>
             <Button
@@ -254,7 +254,7 @@ export default function Home({ initialGroup, initialTeacher }: DynamicSchedulePr
   return (
     <div>
       {/* Отображаем расписание с вкладками и таблицей */}
-      <ScheduleTabs scheduleData={schedule} isLoading={isLoading} initialGroup={initialGroup} initialTeacher={initialTeacher} />
+      <ScheduleTabs scheduleData={Array.isArray(schedule) ? schedule : []} isLoading={isLoading} initialGroup={initialGroup} initialTeacher={initialTeacher} />
 
       {/* Диалог со списком изменений */}
       <Dialog open={changesDialogOpen} onOpenChange={setChangesDialogOpen}>
