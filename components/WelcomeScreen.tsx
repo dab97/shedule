@@ -11,7 +11,7 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import { ResponsiveComboBox } from "./schedule-view/responsive-combobox";
+import { ResponsiveComboBox } from "./responsive-combobox";
 
 interface WelcomeScreenProps {
     groups: string[];

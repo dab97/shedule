@@ -41,6 +41,7 @@ interface ResponsiveComboBoxProps {
     emptyText?: string;
     renderItem?: (item: Item, isSelected: boolean) => React.ReactNode;
     id?: string;
+    className?: string;
 }
 
 export function ResponsiveComboBox({
@@ -52,6 +53,7 @@ export function ResponsiveComboBox({
     emptyText = "Ничего не найдено",
     renderItem,
     id,
+    className,
 }: ResponsiveComboBoxProps) {
     const [open, setOpen] = React.useState(false);
     const [isDesktop, setIsDesktop] = React.useState(true);
@@ -117,7 +119,7 @@ export function ResponsiveComboBox({
                         variant="outline"
                         role="combobox"
                         aria-expanded={open}
-                        className="w-full justify-between font-normal"
+                        className={cn("w-full justify-between font-normal", className)}
                     >
                         <span className="truncate">
                             {selectedItem ? selectedItem.label : placeholder}
@@ -140,7 +142,7 @@ export function ResponsiveComboBox({
                     variant="outline"
                     role="combobox"
                     aria-expanded={open}
-                    className="w-full justify-between font-normal"
+                    className={cn("w-full justify-between font-normal", className)}
                 >
                     <span className="truncate">
                         {selectedItem ? selectedItem.label : placeholder}
